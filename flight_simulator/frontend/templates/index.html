@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FlyEase - Flight Booking</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>✈️ FlyEase – Flight Booking Simulator</h1>
+    </header>
+
+    
+    <section id="search-section" class="card">
+      <form id="search-form">
+        <div class="row">
+          <div class="col">
+            <label for="from">From</label>
+            <input type="text" id="from" placeholder="City or code (e.g. Delhi (DEL))" autocomplete="on" />
+            <div id="from-suggestions" class="suggestions"></div>
+          </div>
+
+          <div class="col">
+            <label for="to">To</label>
+            <input type="text" id="to" placeholder="City or code (e.g. Mumbai (BOM))" autocomplete="on" />
+            <div id="to-suggestions" class="suggestions"></div>
+          </div>
+        </div>
+
+        <div class="row trip-row">
+          <div class="col trip-type">
+            <label>Trip Type</label>
+            <div class="radio-group">
+              <label><input type="radio" name="trip-type" value="oneway" checked /> One-way</label>
+              <label><input type="radio" name="trip-type" value="roundtrip" /> Round-trip</label>
+            </div>
+          </div>
+
+          <div class="col">
+            <label for="date">Departure Date</label>
+            <input type="date" id="date" required />
+          </div>
+
+          <div class="col" id="return-col" style="display:none;">
+            <label for="return-date">Return Date</label>
+            <input type="date" id="return-date" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col small">
+            <label for="passengers">Passengers</label>
+            <input type="number" id="passengers" min="1" value="1" />
+          </div>
+
+          <div class="col small">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn">Search Flights</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <section id="results-section" class="card hidden">
+      <h2>Available Flights</h2>
+      <div id="flight-results"></div>
+      <div class="step-nav">
+        <button id="back-to-search" class="btn ghost">Back</button>
+      </div>
+    </section>
+
+    
+    <section id="select-section" class="card hidden">
+      <h2>Selected Offer</h2>
+      <div id="selected-flight"></div>
+
+      <form id="class-form">
+        <label for="seat-class">Select Class</label>
+        <select id="seat-class">
+          <option>Economy</option>
+          <option>Premium Economy</option>
+          <option>Business</option>
+          <option>First</option>
+        </select>
+
+        <div class="step-nav">
+          <button id="class-back" class="btn ghost">Back</button>
+          <button type="submit" class="btn">Continue</button>
+        </div>
+      </form>
+    </section>
+
+    
+    <section id="passenger-section" class="card hidden">
+      <h2>Passenger Information</h2>
+      <form id="passenger-form">
+        <div id="passenger-forms-container"></div>
+
+        <div class="step-nav">
+          <button id="passenger-back" class="btn ghost">Back</button>
+          <button type="submit" class="btn">Review</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="review-section" class="card hidden">
+      <h2>Review & Price</h2>
+      <div id="review-summary" class="review-box"></div>
+      <div class="step-nav">
+        <button id="review-back" class="btn ghost">Back</button>
+        <button id="confirm-booking" class="btn">Confirm Booking</button>
+      </div>
+    </section>
+
+    
+    <section id="confirmation-section" class="card hidden">
+      <h2>Booking Confirmed</h2>
+      <div id="confirmation-details" class="review-box"></div>
+
+      <div class="step-nav">
+        <button id="download-json" class="btn ghost">Download JSON</button>
+        <button id="download-pdf" class="btn ghost">Print / PDF</button>
+        <button id="new-search" class="btn">New Search</button>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="{% static 'script.js' %}"></script>
+</body>
+</html>

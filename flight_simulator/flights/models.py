@@ -10,7 +10,7 @@ class Flight(models.Model):
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
     total_seats = models.IntegerField(default=100)
     available_seats = models.IntegerField(default=100)
-    demand_factor = models.FloatField(default=1.0)  # simulated demand
+    demand_factor = models.FloatField(default=1.0)  
 
     def __str__(self):
         return f"{self.origin} → {self.destination} ({self.departure_time.strftime('%Y-%m-%d %H:%M')})"
