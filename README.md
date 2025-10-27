@@ -12,7 +12,7 @@ This is a Django-based flight simulator application.
 
 ## File Structure
 
-
+```
 ├── README.md
 ├── db.sqlite3
 ├── flight_simulator/
@@ -42,8 +42,7 @@ This is a Django-based flight simulator application.
 │   └── views.py
 ├── manage.py
 └── requirements.txt
-
-
+```
 ## Features
 
 - Search for flights between two airports on a given date.
