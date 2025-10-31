@@ -98,26 +98,26 @@ To deploy the application in a production environment, follow these steps:
 
 1.  Disable debug mode:In `flight_simulator/settings.py`, set `DEBUG = False`.
 2.  Configure allowed hosts: In `flight_simulator/settings.py`, set `ALLOWED_HOSTS` to a list of the domains that will host the application.
-3.  ##Set a secret key:## In `flight_simulator/settings.py`, replace the default `SECRET_KEY` with a unique, randomly generated key.
-4.  ##Collect static files:## Run `python manage.py collectstatic` to collect all static files into a single directory.
-5.  ##Use a production web server:## Use a production-ready web server such as Gunicorn or uWSGI to serve the application.
+3.  Set a secret key:## In `flight_simulator/settings.py`, replace the default `SECRET_KEY` with a unique, randomly generated key.
+4.  Collect static files:## Run `python manage.py collectstatic` to collect all static files into a single directory.
+5.  Use a production web server:## Use a production-ready web server such as Gunicorn or uWSGI to serve the application.
 
 ## Testing
 
 To run the test suite, use the following command:
-python manage.py runserver
+```python manage.py runserver ```
 
 
 ## Getting Started
 
 1. **Install dependencies:**
 
-   pip install -r requirements.txt
+   ```pip install -r requirements.txt```
 
 2. **Run migrations:**
 
-   python manage.py migrate
+   ``` python manage.py migrate ```
  
 3. **Start the development server:**
 
-   python manage.py runserver
+   ``` python manage.py runserver ```
