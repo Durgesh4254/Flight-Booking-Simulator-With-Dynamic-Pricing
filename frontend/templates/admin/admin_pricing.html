@@ -1,0 +1,379 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Dynamic Pricing Control Center | FlyEase Revenue Management{% endblock %}
+{% block page_title %}Dynamic Pricing Engine & Simulation Lab{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+  
+  <!-- Live Flight Pricing Factor Inspector -->
+  <div class="admin-glass-card">
+    <div class="admin-glass-card-header">
+      <h3 class="admin-card-title"><i class="fa-solid fa-calculator" style="color:var(--admin-cyan);"></i> Live Pricing Breakdown Visualizer</h3>
+      <div style="display:flex;gap:0.5rem;">
+        <select class="admin-select" id="pricing-flight-select" style="width:240px;" onchange="loadFlightPricingDetails()">
+          <option value="">Select a flight...</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="pricing-inspector-content">
+      <div style="text-align:center;padding:3rem;color:var(--admin-text-muted);">
+        <i class="fa-solid fa-plane-up fa-2x mb-2" style="color:var(--admin-cyan);opacity:0.5;"></i>
+        <p>Select any flight to inspect live dynamic pricing factors, multi-tier curve breakdown, and override rules.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-Time Price Simulator Lab -->
+  <div class="admin-glass-card">
+    <div class="admin-glass-card-header">
+      <h3 class="admin-card-title"><i class="fa-solid fa-sliders" style="color:var(--admin-purple);"></i> Pricing Simulator Lab</h3>
+      <span class="admin-badge-pill">Sandbox Mode</span>
+    </div>
+
+    <div class="pricing-formula-box" style="margin-bottom:1.25rem;">
+      <div class="form-group mb-3">
+        <label style="font-size:0.8rem;color:var(--admin-text-muted);">Base Fare (₹)</label>
+        <input type="number" id="sim-base-price" class="admin-input" value="4500" oninput="runPriceSimulation()">
+      </div>
+
+      <div class="form-group mb-3">
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--admin-text-muted);margin-bottom:4px;">
+          <span>Demand Factor</span>
+          <strong id="sim-demand-val" style="color:var(--admin-cyan);">85%</strong>
+        </div>
+        <input type="range" id="sim-demand" min="20" max="180" value="85" style="width:100%;accent-color:var(--admin-cyan);" oninput="runPriceSimulation()">
+      </div>
+
+      <div class="form-group mb-3">
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--admin-text-muted);margin-bottom:4px;">
+          <span>Remaining Seats</span>
+          <strong id="sim-seats-val" style="color:var(--admin-emerald);">18 / 180</strong>
+        </div>
+        <input type="range" id="sim-seats" min="0" max="180" value="18" style="width:100%;accent-color:var(--admin-emerald);" oninput="runPriceSimulation()">
+      </div>
+
+      <div class="form-group mb-3">
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--admin-text-muted);margin-bottom:4px;">
+          <span>Hours to Departure</span>
+          <strong id="sim-hours-val" style="color:var(--admin-amber);">14 hours</strong>
+        </div>
+        <input type="range" id="sim-hours" min="1" max="168" value="14" style="width:100%;accent-color:var(--admin-amber);" oninput="runPriceSimulation()">
+      </div>
+
+      <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:#fff;">
+        <input type="checkbox" id="sim-weekend" onchange="runPriceSimulation()"> Weekend Departure Surcharge
+      </div>
+    </div>
+
+    <!-- Simulator Result Card -->
+    <div style="background:rgba(15,23,42,0.9);border:1px solid var(--admin-cyan);border-radius:12px;padding:1rem;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:0.75rem;color:var(--admin-text-muted);text-transform:uppercase;">Simulated Fare</div>
+        <div id="sim-result-fare" style="font-size:1.6rem;font-weight:800;color:#fff;font-family:'Outfit',sans-serif;">₹5,850</div>
+        <div id="sim-result-delta" style="font-size:0.8rem;color:var(--admin-emerald);font-weight:700;">+₹1,350 (+30.0%)</div>
+      </div>
+      <button type="button" class="admin-btn admin-btn-primary" onclick="applySimulatedRuleToCurrentFlight()">
+        <i class="fa-solid fa-check"></i> Apply Fare Rule
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Global Engine Configuration & Multipliers -->
+<div class="admin-glass-card mb-4">
+  <div class="admin-glass-card-header">
+    <h3 class="admin-card-title"><i class="fa-solid fa-gears" style="color:var(--admin-emerald);"></i> Global Dynamic Pricing Engine Rules & Bounds</h3>
+    <button type="button" class="admin-btn admin-btn-primary" onclick="saveGlobalPricingRules()">
+      <i class="fa-solid fa-floppy-disk"></i> Save Global Engine Rules
+    </button>
+  </div>
+
+  <form id="global-pricing-rules-form" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1.25rem;">
+    <div class="form-group">
+      <label style="font-size:0.8rem;color:var(--admin-text-muted);">Minimum Fare Floor (₹)</label>
+      <input type="number" id="rule-min-floor" class="admin-input" value="1800">
+    </div>
+    <div class="form-group">
+      <label style="font-size:0.8rem;color:var(--admin-text-muted);">Maximum Fare Cap (₹)</label>
+      <input type="number" id="rule-max-cap" class="admin-input" value="65000">
+    </div>
+    <div class="form-group">
+      <label style="font-size:0.8rem;color:var(--admin-text-muted);">Demand Multiplier Weight</label>
+      <input type="number" step="0.05" id="rule-demand-weight" class="admin-input" value="1.15">
+    </div>
+    <div class="form-group">
+      <label style="font-size:0.8rem;color:var(--admin-text-muted);">Seat Scarcity Multiplier</label>
+      <input type="number" step="0.05" id="rule-seat-weight" class="admin-input" value="1.25">
+    </div>
+    <div class="form-group">
+      <label style="font-size:0.8rem;color:var(--admin-text-muted);">Time to Departure Multiplier</label>
+      <input type="number" step="0.05" id="rule-time-weight" class="admin-input" value="1.20">
+    </div>
+    <div class="form-group">
+      <label style="font-size:0.8rem;color:var(--admin-text-muted);">Weekend Surcharge</label>
+      <input type="number" step="0.05" id="rule-weekend-weight" class="admin-input" value="1.15">
+    </div>
+  </form>
+</div>
+
+<!-- Price History Chart for Selected Flight -->
+<div class="admin-glass-card">
+  <div class="admin-glass-card-header">
+    <h3 class="admin-card-title"><i class="fa-solid fa-timeline" style="color:var(--admin-cyan);"></i> Historical Price Fluctuations (Selected Flight)</h3>
+  </div>
+  <div style="height:280px;position:relative;">
+    <canvas id="priceHistoryChart"></canvas>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let currentFlightId = null;
+  let priceHistChart = null;
+
+  async function populateFlightsDropdown() {
+    try {
+      const res = await fetch('/admin-portal/api/flights/?page_size=100');
+      const d = await res.json();
+      const sel = document.getElementById('pricing-flight-select');
+      sel.innerHTML = '<option value="">Select a flight to inspect...</option>' + 
+        d.flights.map(f => `<option value="${f.id}">[${f.flight_number}] ${f.origin_code} → ${f.destination_code} (${f.departure_time})</option>`).join('');
+      
+      if (d.flights.length > 0) {
+        sel.value = d.flights[0].id;
+        loadFlightPricingDetails();
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  async function loadFlightPricingDetails() {
+    const flightId = document.getElementById('pricing-flight-select').value;
+    if (!flightId) return;
+    currentFlightId = flightId;
+
+    try {
+      const res = await fetch(`/admin-portal/api/flight/${flightId}/pricing/`);
+      const d = await res.json();
+
+      // Populate Inspector UI
+      const container = document.getElementById('pricing-inspector-content');
+      container.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;background:rgba(255,255,255,0.03);padding:1rem;border-radius:12px;">
+          <div>
+            <div style="font-size:1.3rem;font-weight:700;color:#fff;">${d.flight_number} (${d.route})</div>
+            <div style="color:var(--admin-text-muted);font-size:0.85rem;">${d.airline} | Departure in ${d.hours_to_departure}h | Seats: ${d.seats_available}/${d.total_seats}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.75rem;color:var(--admin-text-muted);text-transform:uppercase;">Current Dynamic Fare</div>
+            <div style="font-size:1.8rem;font-weight:800;color:var(--admin-cyan);font-family:'Outfit',sans-serif;">₹${d.current_fare.toLocaleString()}</div>
+            <div style="font-size:0.75rem;color:var(--admin-text-dim);">+ ₹${d.taxes} GST (Total: ₹${d.total_fare.toLocaleString()})</div>
+          </div>
+        </div>
+
+        <h4 style="font-size:0.95rem;color:#fff;margin-bottom:0.75rem;"><i class="fa-solid fa-list-check me-1 text-primary"></i> Algorithm Price Component Breakdown</h4>
+        <div class="pricing-formula-box mb-4">
+          <div class="pricing-factor-row">
+            <span>Base Airline Fare</span>
+            <strong style="color:#fff;">₹${d.base_price.toLocaleString()}</strong>
+          </div>
+          ${d.breakdown.map(b => `
+            <div class="pricing-factor-row">
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <span class="status-pill ${b.impact === 'high' ? 'status-cancelled' : (b.impact === 'medium' ? 'status-boarding' : 'status-scheduled')}">${b.impact}</span>
+                <span>${b.reason}</span>
+              </div>
+              <strong style="color:${b.factor.startsWith('-') ? 'var(--admin-emerald)' : 'var(--admin-cyan)'};">${b.factor} (₹${b.amount || 0})</strong>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Manual Override Form -->
+        <div style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);border-radius:12px;padding:1rem;">
+          <h4 style="font-size:0.9rem;color:var(--admin-cyan);margin-top:0;margin-bottom:0.5rem;"><i class="fa-solid fa-pen-to-square me-1"></i> Admin Manual Price Override</h4>
+          <div style="display:flex;gap:0.75rem;align-items:center;">
+            <input type="number" id="manual-override-input" class="admin-input" placeholder="Enter override fare (e.g. 5800)" value="${d.manual_override_price || ''}">
+            <button type="button" class="admin-btn admin-btn-primary" onclick="saveManualPriceOverride()"><i class="fa-solid fa-check"></i> Set Override</button>
+            ${d.manual_override_price ? '<button type="button" class="admin-btn admin-btn-danger" onclick="clearManualPriceOverride()"><i class="fa-solid fa-xmark"></i> Clear</button>' : ''}
+          </div>
+        </div>
+      `;
+
+      // Set simulator base
+      document.getElementById('sim-base-price').value = d.base_price;
+      document.getElementById('sim-seats').value = d.seats_available;
+      document.getElementById('sim-hours').value = Math.min(168, Math.max(1, Math.round(d.hours_to_departure)));
+      runPriceSimulation();
+
+      // Render Price History Chart
+      renderPriceHistory(d.history);
+
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  async function runPriceSimulation() {
+    const baseP = document.getElementById('sim-base-price').value;
+    const demand = document.getElementById('sim-demand').value;
+    const seats = document.getElementById('sim-seats').value;
+    const hours = document.getElementById('sim-hours').value;
+    const weekend = document.getElementById('sim-weekend').checked;
+
+    document.getElementById('sim-demand-val').textContent = `${demand}%`;
+    document.getElementById('sim-seats-val').textContent = `${seats} / 180`;
+    document.getElementById('sim-hours-val').textContent = `${hours} hours`;
+
+    try {
+      const res = await fetch('/admin-portal/api/pricing/simulate/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          flight_id: currentFlightId,
+          base_price: baseP,
+          demand_pct: demand,
+          seats_remaining: seats,
+          hours_to_departure: hours,
+          is_weekend: weekend
+        })
+      });
+      const d = await res.json();
+      if (d.success) {
+        document.getElementById('sim-result-fare').textContent = `₹${d.simulated_fare.toLocaleString()}`;
+        document.getElementById('sim-result-delta').textContent = `${d.difference >= 0 ? '+' : ''}₹${d.difference.toLocaleString()} (${d.percentage_diff}%)`;
+        document.getElementById('sim-result-delta').style.color = d.difference >= 0 ? 'var(--admin-cyan)' : 'var(--admin-emerald)';
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  async function saveManualPriceOverride() {
+    if (!currentFlightId) return;
+    const val = document.getElementById('manual-override-input').value;
+    try {
+      const res = await fetch(`/admin-portal/api/flight/${currentFlightId}/pricing/apply/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manual_override_price: val || null })
+      });
+      const d = await res.json();
+      if (d.success) {
+        AdminApp.showToast(d.message);
+        loadFlightPricingDetails();
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  async function clearManualPriceOverride() {
+    if (!currentFlightId) return;
+    document.getElementById('manual-override-input').value = '';
+    saveManualPriceOverride();
+  }
+
+  async function applySimulatedRuleToCurrentFlight() {
+    if (!currentFlightId) return;
+    const simFare = document.getElementById('sim-result-fare').textContent.replace(/[^\d]/g, '');
+    try {
+      const res = await fetch(`/admin-portal/api/flight/${currentFlightId}/pricing/apply/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manual_override_price: simFare })
+      });
+      const d = await res.json();
+      if (d.success) {
+        AdminApp.showToast(`Applied simulated fare ₹${simFare} to flight.`);
+        loadFlightPricingDetails();
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  async function loadGlobalPricingRules() {
+    try {
+      const res = await fetch('/admin-portal/api/pricing/rules/');
+      const d = await res.json();
+      document.getElementById('rule-min-floor').value = d.min_fare_floor;
+      document.getElementById('rule-max-cap').value = d.max_fare_cap;
+      document.getElementById('rule-demand-weight').value = d.demand_multiplier_weight;
+      document.getElementById('rule-seat-weight').value = d.seat_availability_weight;
+      document.getElementById('rule-time-weight').value = d.time_to_departure_weight;
+      document.getElementById('rule-weekend-weight').value = d.weekend_multiplier;
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  async function saveGlobalPricingRules() {
+    try {
+      const res = await fetch('/admin-portal/api/pricing/rules/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          min_fare_floor: document.getElementById('rule-min-floor').value,
+          max_fare_cap: document.getElementById('rule-max-cap').value,
+          demand_multiplier_weight: document.getElementById('rule-demand-weight').value,
+          seat_availability_weight: document.getElementById('rule-seat-weight').value,
+          time_to_departure_weight: document.getElementById('rule-time-weight').value,
+          weekend_multiplier: document.getElementById('rule-weekend-weight').value
+        })
+      });
+      const d = await res.json();
+      if (d.success) {
+        AdminApp.showToast(d.message);
+        loadFlightPricingDetails();
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  function renderPriceHistory(history) {
+    const ctx = document.getElementById('priceHistoryChart').getContext('2d');
+    if (priceHistChart) priceHistChart.destroy();
+    
+    const labels = history.length > 0 ? history.map(h => h.time) : ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'];
+    const data = history.length > 0 ? history.map(h => h.fare) : [4500, 4650, 4900, 5100, 5250, 5500];
+
+    priceHistChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Fare (₹)',
+          data: data,
+          borderColor: '#06B6D4',
+          backgroundColor: 'rgba(6, 182, 212, 0.1)',
+          fill: true,
+          tension: 0.3,
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: '#06B6D4'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8' } },
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', callback: v => '₹' + v.toLocaleString() } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    populateFlightsDropdown();
+    loadGlobalPricingRules();
+  });
+</script>
+{% endblock %}

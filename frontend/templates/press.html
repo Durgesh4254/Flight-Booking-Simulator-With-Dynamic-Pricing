@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Press & Media Center 📰 | FlyEase Newsroom{% endblock %}
+
+{% block content %}
+<section class="feature-page-container">
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-newspaper text-primary me-1"></i> Newsroom</span>
+      <h1 class="page-title mt-2">FlyEase Press & Media Center</h1>
+      <p class="page-subtitle muted max-w-750 mx-auto">
+        Stay updated with our latest aviation innovations, platform milestones, dynamic pricing algorithms, and partnerships.
+      </p>
+    </div>
+  </div>
+
+  <div class="container max-w-1280 mt-5 pb-5">
+    <div class="grid-2 gap-4">
+      <div class="glass p-5 rounded-xl">
+        <span class="badge badge-primary mb-2">Press Release · August 2026</span>
+        <h3>FlyEase Unveils Cinematic Flight Transitions & Single-Page PDF E-Tickets</h3>
+        <p class="muted mt-3">
+          FlyEase announced the deployment of its V5.0 aviation transition engine featuring 22 synchronized transition phases including 3D globe rotations, radar scans, baggage conveyor verification, and distinct round-trip e-tickets.
+        </p>
+        <div class="flex align-center gap-3 mt-4 small muted">
+          <span><i class="fa-solid fa-clock me-1"></i> 3 min read</span>
+          <span><i class="fa-solid fa-user me-1"></i> FlyEase Media Relations</span>
+        </div>
+      </div>
+
+      <div class="glass p-5 rounded-xl">
+        <span class="badge badge-secondary mb-2">Milestone · July 2026</span>
+        <h3>Real-Time Demand Pricing Surpasses 10,000+ Simulated Flight Bookings</h3>
+        <p class="muted mt-3">
+          Our dynamic pricing model reached a new accuracy benchmark, demonstrating optimal seat yield curves and real-time responsiveness to peak booking hours across domestic and international routes.
+        </p>
+        <div class="flex align-center gap-3 mt-4 small muted">
+          <span><i class="fa-solid fa-clock me-1"></i> 4 min read</span>
+          <span><i class="fa-solid fa-user me-1"></i> Aviation Tech Digest</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Media Kit & Press Inquiries -->
+    <div class="glass p-5 rounded-xl mt-4 flex justify-between align-center flex-wrap gap-3">
+      <div>
+        <h4 class="m-0 text-gradient">Media Inquiries & Press Kit</h4>
+        <p class="muted small mb-0 mt-1">Download official brand assets, logos, and high-resolution interface mockups.</p>
+      </div>
+      <a href="mailto:press@flyease.aero" class="btn btn-primary"><i class="fa-solid fa-envelope me-2"></i> Contact Press Team</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

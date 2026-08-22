@@ -1,0 +1,450 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Flight Management | FlyEase Admin{% endblock %}
+{% block page_title %}Comprehensive Flight Scheduling & Pricing Control{% endblock %}
+
+{% block content %}
+<!-- Flight Search & Filter Toolbar -->
+<div class="admin-toolbar">
+  <div class="toolbar-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="flight-search-input" class="admin-input"
+      placeholder="Search by flight number, origin, destination, airline..." oninput="debounceFlightSearch()">
+  </div>
+
+  <div class="toolbar-filters">
+    <select class="admin-select" id="filter-airline" style="width:160px;" onchange="loadFlightsTable(1)">
+      <option value="">All Airlines</option>
+    </select>
+
+    <select class="admin-select" id="filter-status" style="width:140px;" onchange="loadFlightsTable(1)">
+      <option value="">All Statuses</option>
+      <option value="SCHEDULED">Scheduled</option>
+      <option value="BOARDING">Boarding</option>
+      <option value="IN_FLIGHT">In Flight</option>
+      <option value="LANDED">Landed</option>
+      <option value="DELAYED">Delayed</option>
+      <option value="CANCELLED">Cancelled</option>
+    </select>
+
+    <button type="button" class="admin-btn admin-btn-outline" onclick="openBulkPricingModal()">
+      <i class="fa-solid fa-money-bill-trend-up"></i> Bulk Price Adjust
+    </button>
+
+    <button type="button" class="admin-btn admin-btn-primary" onclick="openCreateFlightModal()">
+      <i class="fa-solid fa-plus"></i> Schedule New Flight
+    </button>
+  </div>
+</div>
+
+<!-- All Flights Data Table -->
+<div class="admin-table-container">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th style="width:30px;"><input type="checkbox" id="select-all-flights" onchange="toggleSelectAllFlights(this)">
+        </th>
+        <th>Flight</th>
+        <th>Route</th>
+        <th>Schedule (UTC/IST)</th>
+        <th>Base Fare</th>
+        <th>Live Dynamic Fare</th>
+        <th>Seats Occupancy</th>
+        <th>Demand Tag</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="flights-table-body">
+      <tr>
+        <td colspan="10" style="text-align:center;padding:2rem;color:var(--admin-text-muted);">Loading live flight
+          matrix...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination Controls -->
+<div
+  style="display:flex;justify-content:space-between;align-items:center;margin-top:1.25rem;color:var(--admin-text-muted);font-size:0.88rem;">
+  <div>Showing <span id="page-range-start">1</span>-<span id="page-range-end">25</span> of <span
+      id="total-flights-count">0</span> flights</div>
+  <div style="display:flex;gap:0.5rem;">
+    <button type="button" class="admin-btn admin-btn-outline" id="prev-page-btn" onclick="changeFlightPage(-1)"><i
+        class="fa-solid fa-chevron-left"></i> Previous</button>
+    <button type="button" class="admin-btn admin-btn-outline" id="next-page-btn" onclick="changeFlightPage(1)">Next <i
+        class="fa-solid fa-chevron-right"></i></button>
+  </div>
+</div>
+
+<!-- CREATE / EDIT FLIGHT MODAL -->
+<div class="admin-modal-backdrop" id="flightModal">
+  <div class="admin-modal-dialog">
+    <div class="admin-modal-header">
+      <h3 class="admin-card-title" id="flightModalTitle"><i class="fa-solid fa-plane-up text-primary"></i> Schedule New
+        Flight</h3>
+      <button type="button" class="sidebar-toggle-btn" onclick="AdminApp.closeModal('flightModal')"><i
+          class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="flightForm" onsubmit="handleSaveFlight(event)">
+      <input type="hidden" id="modal-flight-id">
+      <div class="admin-modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Flight Number</label>
+            <input type="text" id="modal-flight-number" class="admin-input" placeholder="e.g. 6E-402" required>
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Airline Code</label>
+            <select id="modal-airline-code" class="admin-select" required>
+              <option value="6E">6E - IndiGo</option>
+              <option value="AI">AI - Air India</option>
+              <option value="UK">UK - Vistara</option>
+              <option value="EK">EK - Emirates</option>
+              <option value="SQ">SQ - Singapore Airlines</option>
+              <option value="BA">BA - British Airways</option>
+              <option value="LH">LH - Lufthansa</option>
+              <option value="QR">QR - Qatar Airways</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Origin Airport (IATA)</label>
+            <input type="text" id="modal-origin-code" class="admin-input" placeholder="BOM" maxlength="3" required>
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Destination Airport (IATA)</label>
+            <input type="text" id="modal-dest-code" class="admin-input" placeholder="DEL" maxlength="3" required>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Departure Date & Time</label>
+            <input type="datetime-local" id="modal-departure-time" class="admin-input" required>
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Arrival Date & Time</label>
+            <input type="datetime-local" id="modal-arrival-time" class="admin-input" required>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Base Fare (₹)</label>
+            <input type="number" id="modal-base-price" class="admin-input" placeholder="4500" required>
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Operational Status</label>
+            <select id="modal-status" class="admin-select">
+              <option value="SCHEDULED">Scheduled</option>
+              <option value="BOARDING">Boarding</option>
+              <option value="IN_FLIGHT">In Flight</option>
+              <option value="LANDED">Landed</option>
+              <option value="DELAYED">Delayed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size:0.8rem;color:var(--admin-text-muted);">Manual Override Price (Optional)</label>
+          <input type="number" id="modal-override-price" class="admin-input"
+            placeholder="Leave blank for dynamic engine calculation">
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="admin-btn admin-btn-outline"
+          onclick="AdminApp.closeModal('flightModal')">Cancel</button>
+        <button type="submit" class="admin-btn admin-btn-primary" id="save-flight-submit-btn"><i
+            class="fa-solid fa-floppy-disk"></i> Save Flight</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- BULK PRICE ADJUSTMENT MODAL -->
+<div class="admin-modal-backdrop" id="bulkPricingModal">
+  <div class="admin-modal-dialog">
+    <div class="admin-modal-header">
+      <h3 class="admin-card-title"><i class="fa-solid fa-wand-magic-sparkles text-primary"></i> Bulk Price Adjustment
+      </h3>
+      <button type="button" class="sidebar-toggle-btn" onclick="AdminApp.closeModal('bulkPricingModal')"><i
+          class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="bulkPriceForm" onsubmit="handleBulkPriceAdjustment(event)">
+      <div class="admin-modal-body">
+        <p style="color:var(--admin-text-muted);font-size:0.88rem;margin-bottom:1.25rem;">
+          Apply instant price changes across all <strong id="selected-flights-count-modal"
+            style="color:var(--admin-cyan);">0</strong> selected flights.
+        </p>
+
+        <div class="form-group mb-3">
+          <label style="font-size:0.8rem;color:var(--admin-text-muted);">Adjustment Type</label>
+          <select id="bulk-adj-type" class="admin-select">
+            <option value="PERCENT">Percentage Adjustment (+% or -%)</option>
+            <option value="FIXED">Fixed Rupee Adjustment (+₹ or -₹)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size:0.8rem;color:var(--admin-text-muted);">Adjustment Value</label>
+          <input type="number" step="0.5" id="bulk-adj-val" class="admin-input"
+            placeholder="e.g. 10 for +10% or -500 for -₹500" required>
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="admin-btn admin-btn-outline"
+          onclick="AdminApp.closeModal('bulkPricingModal')">Cancel</button>
+        <button type="submit" class="admin-btn admin-btn-primary"><i class="fa-solid fa-bolt"></i> Apply Bulk
+          Pricing</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let currentFlightPage = 1;
+  let selectedFlightIds = new Set();
+  let searchDebounceTimer = null;
+
+  function debounceFlightSearch() {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      loadFlightsTable(1);
+    }, 300);
+  }
+
+  async function loadFlightsTable(page = 1) {
+    currentFlightPage = page;
+    const search = document.getElementById('flight-search-input').value;
+    const airline = document.getElementById('filter-airline').value;
+    const status = document.getElementById('filter-status').value;
+
+    try {
+      const res = await fetch(`/admin-portal/api/flights/?page=${page}&search=${encodeURIComponent(search)}&airline=${airline}&status=${status}`);
+      const data = await res.json();
+
+      const tbody = document.getElementById('flights-table-body');
+      if (data.flights.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--admin-text-muted);">No matching flights found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.flights.map(f => `
+        <tr>
+          <td><input type="checkbox" class="flight-row-checkbox" value="${f.id}" ${selectedFlightIds.has(f.id) ? 'checked' : ''} onchange="toggleFlightSelect(${f.id}, this.checked)"></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <div class="airline-logo-badge" style="width:32px;height:32px;border-radius:6px;padding:2px;">
+                <img src="${f.airline_logo || 'https://images.kiwi.com/airlines/64/' + f.airline_code + '.png'}" alt="${f.airline_code}" onerror="this.src='https://images.kiwi.com/airlines/64/${f.airline_code}.png'">
+              </div>
+              <div>
+                <div style="font-weight:700;color:#fff;">${f.flight_number}</div>
+                <div style="font-size:0.75rem;color:var(--admin-text-muted);">${f.airline_name} (${f.aircraft})</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div style="font-weight:600;color:var(--admin-cyan);">${f.origin_code} → ${f.destination_code}</div>
+            <div style="font-size:0.75rem;color:var(--admin-text-dim);">${f.origin_city} to ${f.destination_city}</div>
+          </td>
+          <td>
+            <div style="font-size:0.85rem;color:#fff;">${f.departure_time}</div>
+            <div style="font-size:0.75rem;color:var(--admin-text-dim);">Arr: ${f.arrival_time}</div>
+          </td>
+          <td style="color:var(--admin-text-muted);">₹${f.base_price.toLocaleString()}</td>
+          <td>
+            <div style="font-weight:800;color:#fff;font-family:'Outfit',sans-serif;">₹${f.current_fare.toLocaleString()}</div>
+            ${f.manual_override ? '<span style="font-size:0.68rem;color:var(--admin-amber);"><i class="fa-solid fa-lock me-1"></i>Override</span>' : '<span style="font-size:0.68rem;color:var(--admin-cyan);">Dynamic</span>'}
+          </td>
+          <td>
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:2px;">
+              <span>${f.total_seats - f.available_seats}/${f.total_seats}</span>
+              <span style="font-weight:600;">${f.occupancy}%</span>
+            </div>
+            <div class="factor-progress-bar" style="width:100px;">
+              <div class="factor-progress-fill" style="width:${Math.min(100, f.occupancy)}%;"></div>
+            </div>
+          </td>
+          <td><span style="font-size:0.75rem;font-weight:700;">${f.demand_tag}</span></td>
+          <td><span class="status-pill status-${f.status.toLowerCase()}">${f.status}</span></td>
+          <td>
+            <div style="display:flex;gap:0.4rem;">
+              <a href="/admin-portal/pricing/" class="admin-btn admin-btn-outline" style="padding:0.3rem 0.6rem;font-size:0.75rem;" title="Inspect Pricing"><i class="fa-solid fa-calculator"></i></a>
+              <a href="/admin-portal/seats/?flight_id=${f.id}" class="admin-btn admin-btn-outline" style="padding:0.3rem 0.6rem;font-size:0.75rem;" title="Manage Seats"><i class="fa-solid fa-couch"></i></a>
+              <button type="button" class="admin-btn admin-btn-outline" style="padding:0.3rem 0.6rem;font-size:0.75rem;" onclick="openEditFlightModal(${JSON.stringify(f).replace(/"/g, '&quot;')})"><i class="fa-solid fa-pen"></i></button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      // Update Pagination Numbers
+      const start = (data.page - 1) * data.page_size + 1;
+      const end = Math.min(data.page * data.page_size, data.total);
+      document.getElementById('page-range-start').textContent = start;
+      document.getElementById('page-range-end').textContent = end;
+      document.getElementById('total-flights-count').textContent = data.total;
+      document.getElementById('prev-page-btn').disabled = data.page <= 1;
+      document.getElementById('next-page-btn').disabled = end >= data.total;
+
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function changeFlightPage(delta) {
+    loadFlightsTable(currentFlightPage + delta);
+  }
+
+  function toggleFlightSelect(id, checked) {
+    if (checked) selectedFlightIds.add(id);
+    else selectedFlightIds.delete(id);
+  }
+
+  function toggleSelectAllFlights(box) {
+    const checkboxes = document.querySelectorAll('.flight-row-checkbox');
+    checkboxes.forEach(cb => {
+      cb.checked = box.checked;
+      toggleFlightSelect(parseInt(cb.value), box.checked);
+    });
+  }
+
+  function openCreateFlightModal() {
+    document.getElementById('flightModalTitle').innerHTML = '<i class="fa-solid fa-plane-up text-primary"></i> Schedule New Flight';
+    document.getElementById('modal-flight-id').value = '';
+    document.getElementById('modal-flight-number').value = '';
+    document.getElementById('modal-origin-code').value = '';
+    document.getElementById('modal-dest-code').value = '';
+    document.getElementById('modal-base-price').value = '4500';
+    document.getElementById('modal-override-price').value = '';
+    AdminApp.openModal('flightModal');
+  }
+
+  function openEditFlightModal(f) {
+    document.getElementById('flightModalTitle').innerHTML = `<i class="fa-solid fa-pen text-primary"></i> Edit Flight ${f.flight_number}`;
+    document.getElementById('modal-flight-id').value = f.id;
+    document.getElementById('modal-flight-number').value = f.flight_number;
+    document.getElementById('modal-airline-code').value = f.airline_code || '6E';
+    document.getElementById('modal-origin-code').value = f.origin_code;
+    document.getElementById('modal-dest-code').value = f.destination_code;
+    document.getElementById('modal-base-price').value = f.base_price;
+    document.getElementById('modal-status').value = f.status;
+    document.getElementById('modal-override-price').value = f.manual_override || '';
+    AdminApp.openModal('flightModal');
+  }
+
+  async function handleSaveFlight(e) {
+    e.preventDefault();
+    const saveBtn = document.getElementById('save-flight-submit-btn');
+    saveBtn.disabled = true;
+
+    const payload = {
+      id: document.getElementById('modal-flight-id').value || null,
+      flight_number: document.getElementById('modal-flight-number').value,
+      airline_code: document.getElementById('modal-airline-code').value,
+      origin_code: document.getElementById('modal-origin-code').value,
+      dest_code: document.getElementById('modal-dest-code').value,
+      departure_time: document.getElementById('modal-departure-time').value,
+      arrival_time: document.getElementById('modal-arrival-time').value,
+      base_price: document.getElementById('modal-base-price').value,
+      status: document.getElementById('modal-status').value,
+      manual_override_price: document.getElementById('modal-override-price').value || null
+    };
+
+    try {
+      const res = await fetch('/admin-portal/api/flight/save/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        AdminApp.showToast(data.message);
+        AdminApp.closeModal('flightModal');
+        loadFlightsTable(currentFlightPage);
+      } else {
+        alert(data.error || 'Failed to save flight.');
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      saveBtn.disabled = false;
+    }
+  }
+
+  function openBulkPricingModal() {
+    if (selectedFlightIds.size === 0) {
+      alert('Please select one or more flights in the table first.');
+      return;
+    }
+    document.getElementById('selected-flights-count-modal').textContent = selectedFlightIds.size;
+    AdminApp.openModal('bulkPricingModal');
+  }
+
+  async function handleBulkPriceAdjustment(e) {
+    e.preventDefault();
+    const type = document.getElementById('bulk-adj-type').value;
+    const val = parseFloat(document.getElementById('bulk-adj-val').value);
+
+    try {
+      const res = await fetch('/admin-portal/api/pricing/bulk/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          flight_ids: Array.from(selectedFlightIds),
+          adjustment_type: type,
+          value: val
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        AdminApp.showToast(data.message);
+        AdminApp.closeModal('bulkPricingModal');
+        selectedFlightIds.clear();
+        loadFlightsTable(currentFlightPage);
+      } else {
+        alert(data.error || 'Bulk adjustment failed.');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function loadAirlineDropdownOptions() {
+    try {
+      const res = await fetch('/admin-portal/api/airlines/');
+      const data = await res.json();
+      const filterSelect = document.getElementById('filter-airline');
+      const modalSelect = document.getElementById('modal-airline-code');
+
+      if (filterSelect) {
+        filterSelect.innerHTML = '<option value="">All Airlines</option>' + 
+          data.airlines.map(a => `<option value="${a.code}">${a.code} - ${a.name}</option>`).join('');
+      }
+
+      if (modalSelect) {
+        modalSelect.innerHTML = data.airlines.map(a => `<option value="${a.code}">${a.code} - ${a.name}</option>`).join('');
+      }
+    } catch(e) {
+      console.error('Airline dropdown error:', e);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Populate default datetime-local inputs
+    const now = new Date();
+    now.setHours(now.getHours() + 4);
+    const later = new Date(now.getTime() + 2.5 * 3600000);
+    document.getElementById('modal-departure-time').value = now.toISOString().slice(0, 16);
+    document.getElementById('modal-arrival-time').value = later.toISOString().slice(0, 16);
+
+    loadAirlineDropdownOptions();
+    loadFlightsTable(1);
+  });
+</script>
+{% endblock %}

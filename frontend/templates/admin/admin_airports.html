@@ -1,0 +1,123 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Global Destinations & Airports | FlyEase Admin{% endblock %}
+{% block page_title %}Comprehensive Worldwide Airport Database (320+ Destinations){% endblock %}
+
+{% block content %}
+<div class="admin-toolbar">
+  <div class="toolbar-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="airport-search" class="admin-input" placeholder="Search by IATA/ICAO code, airport name, city, country..." oninput="debounceAirportSearch()">
+  </div>
+
+  <div class="toolbar-filters">
+    <select class="admin-select" id="airport-category-filter" style="width:160px;" onchange="loadAirportsTable(1)">
+      <option value="">All Categories</option>
+      <option value="CITY">City / Business</option>
+      <option value="BEACH">Beach</option>
+      <option value="MOUNTAINS">Mountains</option>
+      <option value="HERITAGE">Heritage</option>
+      <option value="PILGRIMAGE">Pilgrimage</option>
+      <option value="ADVENTURE">Adventure</option>
+    </select>
+  </div>
+</div>
+
+<div class="admin-table-container">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Code (IATA / ICAO)</th>
+        <th>Airport & City</th>
+        <th>Country / Region</th>
+        <th>Category</th>
+        <th>Popularity Score</th>
+        <th>Avg Route Fare</th>
+        <th>Best Season</th>
+        <th>Type</th>
+      </tr>
+    </thead>
+    <tbody id="airports-table-body">
+      <tr>
+        <td colspan="8" style="text-align:center;padding:2rem;color:var(--admin-text-muted);">Loading global destination matrix...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.25rem;color:var(--admin-text-muted);font-size:0.88rem;">
+  <div>Showing <span id="ap-start">1</span>-<span id="ap-end">50</span> of <span id="ap-total">0</span> airports</div>
+  <div style="display:flex;gap:0.5rem;">
+    <button type="button" class="admin-btn admin-btn-outline" id="ap-prev" onclick="changeAirportPage(-1)"><i class="fa-solid fa-chevron-left"></i> Previous</button>
+    <button type="button" class="admin-btn admin-btn-outline" id="ap-next" onclick="changeAirportPage(1)">Next <i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let apPage = 1;
+  let apTimer = null;
+
+  function debounceAirportSearch() {
+    clearTimeout(apTimer);
+    apTimer = setTimeout(() => loadAirportsTable(1), 300);
+  }
+
+  async function loadAirportsTable(page = 1) {
+    apPage = page;
+    const q = document.getElementById('airport-search').value;
+    const cat = document.getElementById('airport-category-filter').value;
+
+    try {
+      const res = await fetch(`/admin-portal/api/airports/?page=${page}&q=${encodeURIComponent(q)}&category=${cat}`);
+      const data = await res.json();
+      const tbody = document.getElementById('airports-table-body');
+
+      tbody.innerHTML = data.airports.map(a => `
+        <tr>
+          <td>
+            <div style="font-weight:800;color:var(--admin-cyan);font-size:1.05rem;">${a.code}</div>
+            <div style="font-size:0.72rem;color:var(--admin-text-dim);">${a.icao_code || '-'}</div>
+          </td>
+          <td>
+            <div style="font-weight:600;color:#fff;">${a.name}</div>
+            <div style="font-size:0.75rem;color:var(--admin-text-muted);">${a.city}</div>
+          </td>
+          <td>
+            <div>${a.country}</div>
+            <div style="font-size:0.72rem;color:var(--admin-text-dim);">${a.region}</div>
+          </td>
+          <td><span class="admin-badge-pill">${a.category}</span></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:0.4rem;">
+              <span style="font-weight:700;color:#fff;">${a.popularity}</span>
+              <div class="factor-progress-bar" style="width:60px;">
+                <div class="factor-progress-fill" style="width:${a.popularity}%;"></div>
+              </div>
+            </div>
+          </td>
+          <td style="color:var(--admin-emerald);font-weight:600;">₹${a.avg_fare.toLocaleString()}</td>
+          <td style="font-size:0.8rem;color:var(--admin-text-muted);">${a.best_season}</td>
+          <td><span class="status-pill ${a.is_international ? 'status-scheduled' : 'status-in_flight'}">${a.is_international ? 'International' : 'Domestic'}</span></td>
+        </tr>
+      `).join('');
+
+      document.getElementById('ap-start').textContent = (data.page - 1) * data.page_size + 1;
+      document.getElementById('ap-end').textContent = Math.min(data.page * data.page_size, data.total);
+      document.getElementById('ap-total').textContent = data.total;
+      document.getElementById('ap-prev').disabled = data.page <= 1;
+      document.getElementById('ap-next').disabled = data.page * data.page_size >= data.total;
+
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  function changeAirportPage(delta) {
+    loadAirportsTable(apPage + delta);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => loadAirportsTable(1));
+</script>
+{% endblock %}

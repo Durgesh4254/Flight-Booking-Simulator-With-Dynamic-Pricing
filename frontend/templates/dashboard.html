@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard & FlyEase Passport ✈️ - FlyEase{% endblock %}
+
+{% block content %}
+<div class="dashboard-container max-w-1280 mx-auto px-3 py-4">
+  <div class="dashboard-header glass p-4 mb-4">
+    <div class="user-greeting flex justify-between align-center flex-wrap gap-3">
+      <div class="flex align-center gap-3">
+        <div class="user-avatar-large">{{ request.user.username|make_list|first|upper }}</div>
+        <div>
+          <div class="flex align-center gap-2">
+            <h2 class="m-0">Welcome back, {{ request.user.username }}!</h2>
+            <span class="badge badge-primary font-mono" id="passport-level-badge"><i class="fa-solid fa-crown text-warning me-1"></i> Explorer</span>
+          </div>
+          <p class="muted small m-0 mt-1">Manage active itineraries, live status radar, cancellations, and your FlyEase Travel Passport.</p>
+        </div>
+      </div>
+
+      <div class="dashboard-stat-chips flex gap-2 flex-wrap">
+        <div class="glass-inner px-3 py-2 rounded text-center">
+          <div class="muted tiny">ACTIVE TRIPS</div>
+          <div class="h4 text-cyan m-0 font-mono" id="stat-active-trips">0</div>
+        </div>
+        <div class="glass-inner px-3 py-2 rounded text-center">
+          <div class="muted tiny">STAMPS COLLECTED</div>
+          <div class="h4 text-warning m-0 font-mono" id="stat-passport-stamps">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-content flex gap-4">
+    <!-- Sidebar Navigation -->
+    <div class="dashboard-sidebar glass p-3" style="width: 260px; min-width: 240px;">
+      <ul class="dashboard-nav flex flex-col gap-2">
+        <li class="active"><a href="#my-trips" class="nav-dash-link" onclick="app.switchDashTab('my-trips')"><i class="fa-solid fa-suitcase-rolling me-2"></i> My Trips</a></li>
+        <li><a href="#passport" class="nav-dash-link" onclick="app.switchDashTab('passport')"><i class="fa-solid fa-passport me-2"></i> FlyEase Passport</a></li>
+        <li><a href="#notifications" class="nav-dash-link" onclick="app.toggleNotificationDrawer()"><i class="fa-solid fa-bell me-2"></i> Notifications</a></li>
+        <li><a href="/" class="nav-dash-link"><i class="fa-solid fa-magnifying-glass me-2"></i> Book Flights</a></li>
+        <li><a href="/logout/" class="text-danger nav-dash-link"><i class="fa-solid fa-right-from-bracket me-2"></i> Logout</a></li>
+      </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="dashboard-main flex-1">
+      
+      <!-- TAB 1: MY TRIPS -->
+      <div id="dash-tab-trips" class="dash-tab-pane">
+        <div class="glass p-4 mb-4">
+          <div class="flex justify-between align-center mb-3 flex-wrap gap-2">
+            <h3 class="m-0"><i class="fa-solid fa-ticket text-primary me-2"></i> Your Bookings & Itineraries</h3>
+            <button type="button" class="btn btn-outline btn-xs" onclick="app.loadDashboardBookings()"><i class="fa-solid fa-arrows-rotate me-1"></i> Refresh</button>
+          </div>
+          <hr class="glass-divider mb-4">
+          
+          <div id="dashboard-bookings-list">
+            <div class="loading-spinner">
+               <i class="fa-solid fa-circle-notch fa-spin"></i> Loading your flights...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: FLYEASE TRAVEL PASSPORT & GAMIFICATION -->
+      <div id="dash-tab-passport" class="dash-tab-pane hidden">
+        <div class="glass p-4 mb-4">
+          <div class="flex justify-between align-center mb-3 flex-wrap gap-2">
+            <div class="flex align-center gap-2">
+              <i class="fa-solid fa-passport text-warning font-large"></i>
+              <div>
+                <h3 class="m-0 text-gradient font-display">FlyEase Travel Passport</h3>
+                <p class="muted small m-0">Collect verified destination stamps and unlock achievements</p>
+              </div>
+            </div>
+          </div>
+          <hr class="glass-divider mb-4">
+
+          <!-- Travel Summary Stats -->
+          <div class="passport-metrics-grid grid grid-3 gap-3 mb-4">
+            <div class="glass-inner p-3 rounded text-center">
+              <div class="muted tiny mb-1">COUNTRIES VISITED</div>
+              <div class="h3 text-white m-0 font-mono" id="passport-country-count">0</div>
+            </div>
+            <div class="glass-inner p-3 rounded text-center">
+              <div class="muted tiny mb-1">TOTAL FLIGHTS COMPLETED</div>
+              <div class="h3 text-cyan m-0 font-mono" id="passport-flight-count">0</div>
+            </div>
+            <div class="glass-inner p-3 rounded text-center">
+              <div class="muted tiny mb-1">TOTAL DISTANCE TRAVELED</div>
+              <div class="h3 text-success m-0 font-mono" id="passport-distance-km">0 km</div>
+            </div>
+          </div>
+
+          <!-- Achievements Badges Row -->
+          <h4 class="text-white mb-3"><i class="fa-solid fa-trophy text-warning me-2"></i> Traveler Achievements</h4>
+          <div class="achievements-badges-grid grid grid-3 gap-3 mb-4" id="passport-achievements-list">
+            <!-- Injected by script.js -->
+          </div>
+
+          <!-- Destination Stamp Collection -->
+          <h4 class="text-white mb-3"><i class="fa-solid fa-stamp text-cyan me-2"></i> Destination Stamps Book</h4>
+          <div class="passport-stamps-collection flex gap-3 flex-wrap p-4 glass-inner rounded" id="passport-stamps-container">
+            <!-- Injected dynamically -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Airport Mode Terminal HUD Modal -->
+<div id="airport-mode-modal" class="global-modal-overlay hidden" onclick="if(event.target === this) app.closeAirportMode()">
+  <div class="global-modal-card glass p-4" style="max-width: 720px; width: 95%;">
+    <div class="modal-header-row flex justify-between align-center mb-3">
+      <div class="flex align-center gap-2">
+        <div class="modal-icon-circle"><i class="fa-solid fa-plane-departure text-primary"></i></div>
+        <div>
+          <h3 class="m-0 text-gradient font-display">Airport Mode Terminal HUD</h3>
+          <p class="muted small m-0">Live Gate, Security, and Boarding Navigator</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close-modal" onclick="app.closeAirportMode()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <hr class="glass-divider mb-3">
+    
+    <div id="airport-mode-content">
+      <!-- Injected dynamically by script.js -->
+    </div>
+  </div>
+</div>
+
+<!-- Booking Cancellation & Refund Modal -->
+<div id="cancellation-modal" class="global-modal-overlay hidden" onclick="if(event.target === this) app.closeCancelModal()">
+  <div class="global-modal-card glass p-4" style="max-width: 580px; width: 95%;">
+    <div class="modal-header-row flex justify-between align-center mb-3">
+      <div class="flex align-center gap-2">
+        <div class="modal-icon-circle text-danger"><i class="fa-solid fa-ban text-danger"></i></div>
+        <div>
+          <h3 class="m-0 text-gradient">Cancel Booking & Refund Request</h3>
+          <p class="muted small m-0">Review cancellation policy & refund calculation</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close-modal" onclick="app.closeCancelModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <hr class="glass-divider mb-3">
+    
+    <div id="cancellation-modal-content">
+      <!-- Injected dynamically by script.js -->
+    </div>
+  </div>
+</div>
+{% endblock %}

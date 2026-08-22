@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Explore Top Destinations ✈️ | FlyEase{% endblock %}
+
+{% block content %}
+<section class="destinations-page-section">
+  <!-- Hero Banner -->
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-earth-americas text-primary me-1"></i> Global & Domestic Gateways</span>
+      <h1 class="page-title mt-2">Discover Incredible Destinations</h1>
+      <p class="page-subtitle muted max-w-700 mx-auto">
+        Fly to top metropolitan hubs, coastal paradises, and international skylines with real-time dynamic pricing and instant confirmed seat booking.
+      </p>
+
+      <!-- Interactive Photorealistic 3D Earth World Map Hub & Route Visualizer -->
+      <div class="destinations-orbit-showcase glass-inner p-4 my-4" style="background: radial-gradient(circle at center, rgba(15,23,42,0.96), rgba(2,6,23,0.99)); border: 1px solid rgba(56,189,248,0.35); border-radius: var(--radius-xl); overflow: hidden;">
+        <div class="flex justify-between align-center flex-wrap gap-4 mb-3">
+          <div class="text-left flex-1" style="min-width: 260px;">
+            <span class="badge badge-primary font-mono mb-2"><i class="fa-solid fa-earth-americas me-1"></i> REALISTIC 3D EARTH GLOBE</span>
+            <h2 class="text-white m-0 font-display">Interactive 3D World Map & Live Routes</h2>
+            <p class="muted small mt-1 mb-0">Drag to rotate the photorealistic Earth, select global airport hubs, view live geodesic airway vectors & instant fares.</p>
+          </div>
+
+          <!-- Hierarchy Breadcrumb -->
+          <div class="globe-breadcrumb glass-inner px-3 py-1-5 rounded flex align-center gap-2 font-mono small">
+            <span>🌍 Earth</span>
+            <i class="fa-solid fa-chevron-right text-muted" style="font-size:0.65rem;"></i>
+            <span class="text-cyan" id="globe-country-crumb">🇮🇳 India</span>
+            <i class="fa-solid fa-chevron-right text-muted" style="font-size:0.65rem;"></i>
+            <span class="text-primary font-weight-bold" id="globe-hub-crumb">Mumbai (BOM)</span>
+          </div>
+
+          <!-- Globe Controls -->
+          <div class="globe-controls-bar flex gap-1 align-center">
+            <button type="button" class="btn btn-outline btn-xs" onclick="app.rotateGlobe(-45)" title="Rotate West"><i class="fa-solid fa-rotate-left"></i></button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="app.rotateGlobe(45)" title="Rotate East"><i class="fa-solid fa-rotate-right"></i></button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="app.toggleGlobeAutoSpin()" id="globe-spin-btn" title="Toggle Auto-Spin"><i class="fa-solid fa-pause"></i></button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="app.resetGlobeView()" title="Reset to Home Hub"><i class="fa-solid fa-arrows-rotate"></i></button>
+          </div>
+        </div>
+
+        <div class="globe-canvas-wrapper flex justify-center align-center position-relative my-4" style="min-height: 480px; background: radial-gradient(circle at center, #0a192f 0%, #020617 85%); border-radius: 20px; box-shadow: inset 0 0 70px rgba(0,0,0,0.95); overflow: hidden;">
+          <!-- Photorealistic 3D Earth Video Display Stage with Atmosphere Glow -->
+          <div class="real-earth-video-stage position-relative flex align-center justify-center">
+            <!-- Atmospheric Halo Glow -->
+            <div class="earth-atmosphere-corona"></div>
+            
+            <!-- Video Earth Spherical Screen -->
+            <div class="earth-video-sphere-container">
+              <video id="earth-bg-video" autoplay loop muted playsinline class="earth-video-element">
+                <source src="/video/earth.mp4" type="video/mp4">
+              </video>
+              <div class="earth-specular-shading"></div>
+            </div>
+
+            <!-- Interactive Geodesic Flight Radar Canvas Overlay -->
+            <canvas id="interactive-globe-canvas" width="360" height="360" class="interactive-globe-canvas position-absolute"></canvas>
+          </div>
+
+          <div class="globe-hud-overlay position-absolute bottom-3 left-3 text-left small font-mono text-cyan" style="pointer-events:none;">
+            <i class="fa-solid fa-satellite-dish fa-fade text-success me-1"></i> SATELLITE FEED ACTIVE · LIVE 3D ORBIT · CLICK AIRPORT HUBS TO VIEW FARES
+          </div>
+        </div>
+
+        <!-- Selected Hub Information Drawer -->
+        <div id="globe-hub-drawer" class="globe-hub-drawer glass p-3 text-left mt-3">
+          <div class="flex justify-between align-center flex-wrap gap-2">
+            <div class="flex align-center gap-3">
+              <div class="hub-avatar-large font-display text-primary font-weight-bold" style="font-size:1.8rem;" id="drawer-hub-code">BOM</div>
+              <div>
+                <h4 class="m-0 text-white" id="drawer-hub-city">Mumbai, India</h4>
+                <div class="muted small font-mono" id="drawer-hub-name">Chhatrapati Shivaji Maharaj International Airport</div>
+              </div>
+            </div>
+
+            <div class="flex align-center gap-3 flex-wrap">
+              <div class="text-right">
+                <div class="muted tiny">STARTING FARE</div>
+                <div class="h4 text-gradient m-0 font-mono" id="drawer-hub-price">₹2,800</div>
+              </div>
+              <div class="text-right">
+                <div class="muted tiny">BEST SEASON</div>
+                <div class="small font-weight-bold text-white" id="drawer-hub-season">Oct – Mar</div>
+              </div>
+              <button type="button" class="btn btn-primary btn-sm glow-btn" id="drawer-book-btn" onclick="app.bookFromGlobeHub()">
+                Book Flights Now <i class="fa-solid fa-arrow-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Destination Search & Filter Bar -->
+      <div class="dest-filter-bar glass-inner mt-4 p-3 flex justify-between align-center flex-wrap gap-3">
+        <div class="search-input-wrap flex-1">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="dest-search-input" class="form-control form-control-lg dest-search-field" placeholder="Search across 324 global destinations (e.g. Indore, Bhopal, Abu Dhabi, Jutland, Accra, Addis Ababa, Adelaide)...">
+        </div>
+
+        <div class="filter-btn-group flex gap-2 flex-wrap">
+          <button type="button" class="btn btn-outline btn-sm dest-tab-btn active" data-filter="all">All (324)</button>
+          <button type="button" class="btn btn-outline btn-sm dest-tab-btn" data-filter="domestic">🇮🇳 Domestic (53)</button>
+          <button type="button" class="btn btn-outline btn-sm dest-tab-btn" data-filter="international">🌎 International (271)</button>
+        </div>
+
+        <div class="sort-select-wrap">
+          <select id="dest-sort-select" class="form-control form-control-sm">
+            <option value="popular">Sort by: Most Popular</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="name">Alphabetical</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Destinations Grid -->
+  <div class="container max-w-1280 mt-5 pb-5">
+    <div class="destinations-cards-grid" id="destinations-grid">
+      <!-- Destination cards injected via script/HTML below -->
+    </div>
+  </div>
+</section>
+
+<!-- Include airport data for quick booking triggers -->
+{{ airports|json_script:"dest-airports-data" }}
+{% endblock %}

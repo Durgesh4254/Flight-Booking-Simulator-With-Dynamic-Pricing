@@ -1,0 +1,188 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}FlyEase Travel & Visa Requirements Management{% endblock %}
+{% block page_title %}🛂 Country Visa & Travel Requirements Rules{% endblock %}
+
+{% block content %}
+<div class="mb-4 flex justify-between align-center flex-wrap gap-2">
+  <div>
+    <h3 class="m-0 text-white"><i class="fa-solid fa-passport text-cyan me-2"></i> International Travel Rules & Visa Policies</h3>
+    <p class="muted small m-0 mt-1">Manage official country-pair visa rules, mandatory documents, passport validity, and transit guidelines displayed to customers.</p>
+  </div>
+  <button type="button" class="admin-btn admin-btn-primary" onclick="openRequirementModal()">
+    <i class="fa-solid fa-plus me-1"></i> Add Country Rule
+  </button>
+</div>
+
+<div class="admin-glass-card">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Origin → Destination</th>
+          <th>Visa Category</th>
+          <th>Visa Type</th>
+          <th>Passport Validity</th>
+          <th>Mandatory Documents</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="requirements-tbody">
+        <tr><td colspan="7" class="text-center p-4 muted">Loading travel requirements...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="requirementModal" class="admin-modal-backdrop" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+  <div class="admin-glass-card" style="width:90%;max-width:600px;max-height:90vh;overflow-y:auto;">
+    <div class="admin-glass-card-header flex justify-between align-center">
+      <h3 class="admin-card-title text-white" id="modalTitle">Add Travel Requirement Rule</h3>
+      <button type="button" style="background:none;border:none;color:#94a3b8;font-size:1.4rem;cursor:pointer;" onclick="closeRequirementModal()">&times;</button>
+    </div>
+    <form id="requirementForm" onsubmit="saveRequirement(event)">
+      <input type="hidden" id="req_id" name="id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div>
+          <label class="form-label text-muted small">Origin Country</label>
+          <input type="text" class="admin-input w-100" id="req_origin" name="origin_country" value="India" required>
+        </div>
+        <div>
+          <label class="form-label text-muted small">Destination Country</label>
+          <input type="text" class="admin-input w-100" id="req_dest" name="destination_country" placeholder="e.g. United Arab Emirates" required>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div>
+          <label class="form-label text-muted small">Visa Requirement</label>
+          <select class="admin-input w-100" id="req_visa_required" name="visa_required">
+            <option value="Required">Required</option>
+            <option value="Visa on Arrival">Visa on Arrival (VoA)</option>
+            <option value="Visa Free">Visa Free / Exemption</option>
+            <option value="eVisa">eVisa Online</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label text-muted small">Passport Validity</label>
+          <input type="text" class="admin-input w-100" id="req_passport_validity" name="passport_validity" value="Minimum 6 months from travel date" required>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label text-muted small">Visa Type Description</label>
+        <input type="text" class="admin-input w-100" id="req_visa_type" name="visa_type" placeholder="e.g. Pre-arranged 30/60 Days Tourist Visa" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label text-muted small">Mandatory Checklist Documents (Separated by newlines)</label>
+        <textarea class="admin-input w-100" id="req_documents" name="documents_required" rows="3" placeholder="✓ Valid Passport&#10;✓ Confirmed Return Ticket&#10;✓ Hotel Booking Proof"></textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label text-muted small">Official Source URL</label>
+        <input type="url" class="admin-input w-100" id="req_url" name="official_source_url" value="https://www.iatatravelcentre.com/">
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button type="button" class="admin-btn admin-btn-secondary" onclick="closeRequirementModal()">Cancel</button>
+        <button type="submit" class="admin-btn admin-btn-primary">Save Rule</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let requirementsData = [];
+
+  async function loadRequirements() {
+    try {
+      const res = await fetch('/admin-portal/api/requirements/');
+      const data = await res.json();
+      requirementsData = data.requirements || [];
+      const tbody = document.getElementById('requirements-tbody');
+      
+      if (requirementsData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4 muted">No rules configured.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = requirementsData.map(r => `
+        <tr>
+          <td><strong class="text-white">${r.origin_country} → ${r.destination_country}</strong></td>
+          <td><span class="admin-badge-pill" style="background:rgba(14,165,233,0.15);color:var(--admin-cyan);">${r.visa_required}</span></td>
+          <td class="text-muted small">${r.visa_type}</td>
+          <td class="small">${r.passport_validity}</td>
+          <td class="small text-muted" style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.documents_required}</td>
+          <td><span class="text-emerald">Active</span></td>
+          <td>
+            <button class="admin-btn admin-btn-sm admin-btn-secondary" onclick="editRequirement(${r.id})">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function openRequirementModal() {
+    document.getElementById('requirementForm').reset();
+    document.getElementById('req_id').value = '';
+    document.getElementById('modalTitle').textContent = 'Add Travel Requirement Rule';
+    document.getElementById('requirementModal').style.display = 'flex';
+  }
+
+  function closeRequirementModal() {
+    document.getElementById('requirementModal').style.display = 'none';
+  }
+
+  function editRequirement(id) {
+    const item = requirementsData.find(x => x.id === id);
+    if (!item) return;
+    document.getElementById('req_id').value = item.id;
+    document.getElementById('req_origin').value = item.origin_country;
+    document.getElementById('req_dest').value = item.destination_country;
+    document.getElementById('req_visa_required').value = item.visa_required;
+    document.getElementById('req_visa_type').value = item.visa_type;
+    document.getElementById('req_passport_validity').value = item.passport_validity;
+    document.getElementById('req_documents').value = item.documents_required;
+    document.getElementById('req_url').value = item.official_source_url;
+    document.getElementById('modalTitle').textContent = `Edit Rule for ${item.destination_country}`;
+    document.getElementById('requirementModal').style.display = 'flex';
+  }
+
+  async function saveRequirement(e) {
+    e.preventDefault();
+    const payload = {
+      id: document.getElementById('req_id').value || null,
+      origin_country: document.getElementById('req_origin').value,
+      destination_country: document.getElementById('req_dest').value,
+      visa_required: document.getElementById('req_visa_required').value,
+      visa_type: document.getElementById('req_visa_type').value,
+      passport_validity: document.getElementById('req_passport_validity').value,
+      documents_required: document.getElementById('req_documents').value,
+      official_source_url: document.getElementById('req_url').value
+    };
+
+    try {
+      const res = await fetch('/admin-portal/api/requirement/save/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        closeRequirementModal();
+        loadRequirements();
+      } else {
+        alert(data.error || 'Failed to save');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadRequirements);
+</script>
+{% endblock %}

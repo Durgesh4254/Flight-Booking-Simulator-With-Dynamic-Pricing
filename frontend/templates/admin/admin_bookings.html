@@ -1,0 +1,101 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Bookings Registry | FlyEase Admin{% endblock %}
+{% block page_title %}Global Passenger Bookings & Ticket Registry{% endblock %}
+
+{% block content %}
+<div class="admin-toolbar">
+  <div class="toolbar-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="booking-search" class="admin-input" placeholder="Search by PNR, passenger name, email, ticket number..." oninput="debounceBookingSearch()">
+  </div>
+
+  <div class="toolbar-filters">
+    <select class="admin-select" id="booking-status-filter" style="width:150px;" onchange="loadBookingsTable(1)">
+      <option value="">All Statuses</option>
+      <option value="CONFIRMED">Confirmed</option>
+      <option value="CANCELLED">Cancelled</option>
+      <option value="COMPLETED">Completed</option>
+    </select>
+  </div>
+</div>
+
+<div class="admin-table-container">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>PNR / Ticket</th>
+        <th>Passenger</th>
+        <th>Flight / Route</th>
+        <th>Seat</th>
+        <th>Fare Paid</th>
+        <th>Booking Date</th>
+        <th>Status</th>
+        <th>Refund Status</th>
+      </tr>
+    </thead>
+    <tbody id="bookings-table-body">
+      <tr>
+        <td colspan="8" style="text-align:center;padding:2rem;color:var(--admin-text-muted);">Loading bookings registry...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let searchTimer = null;
+
+  function debounceBookingSearch() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => loadBookingsTable(1), 300);
+  }
+
+  async function loadBookingsTable(page = 1) {
+    const q = document.getElementById('booking-search').value;
+    const status = document.getElementById('booking-status-filter').value;
+
+    try {
+      const res = await fetch(`/admin-portal/api/bookings/?page=${page}&q=${encodeURIComponent(q)}&status=${status}`);
+      const data = await res.json();
+      const tbody = document.getElementById('bookings-table-body');
+
+      if (data.bookings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--admin-text-muted);">No bookings found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.bookings.map(b => `
+        <tr>
+          <td>
+            <div style="font-weight:700;color:var(--admin-cyan);">${b.pnr}</div>
+            <div style="font-size:0.75rem;color:var(--admin-text-dim);">${b.ticket_number}</div>
+          </td>
+          <td>
+            <div style="font-weight:600;color:#fff;">${b.passenger_name}</div>
+            <div style="font-size:0.75rem;color:var(--admin-text-muted);">${b.passenger_email}</div>
+          </td>
+          <td>
+            <div style="font-weight:600;color:#fff;">${b.flight_number}</div>
+            <div style="font-size:0.75rem;color:var(--admin-cyan);">${b.route}</div>
+          </td>
+          <td><span class="admin-badge-pill">${b.seat_number}</span></td>
+          <td>
+            <div style="font-weight:800;color:var(--admin-emerald);font-family:'Outfit',sans-serif;">₹${b.price_paid.toLocaleString()}</div>
+          </td>
+          <td style="font-size:0.8rem;color:var(--admin-text-dim);">${b.created_at}</td>
+          <td><span class="status-pill status-${b.status.toLowerCase()}">${b.status}</span></td>
+          <td><span class="status-pill ${b.refund_status === 'COMPLETED' ? 'status-in_flight' : (b.refund_status === 'REQUESTED' ? 'status-boarding' : 'status-scheduled')}">${b.refund_status}</span></td>
+        </tr>
+      `).join('');
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadBookingsTable(1);
+  });
+</script>
+{% endblock %}

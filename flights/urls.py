@@ -1,0 +1,51 @@
+from django.urls import path
+from .views import (
+    FlightSearchView,
+    FlightSeatMapView,
+    ConfirmBookingView,
+    ApplyCouponView,
+    BookingHistoryView,
+    BookingDetailView,
+    DownloadETicketView,
+    ProcessPaymentView,
+    DealsListView,
+    DealValidateView,
+    CancelBookingView,
+    ExploreDestinationsView,
+    FlyEaseAIChatView,
+    DestinationWeatherView,
+    TravelRequirementsView,
+    CreatePriceAlertView,
+    ListPriceAlertsView,
+    TogglePriceAlertView,
+    LiveFlightTrackerView,
+    PersonalizedRecommendationsView,
+    SystemHealthStatusView,
+)
+
+urlpatterns = [
+    path('search/', FlightSearchView.as_view(), name='flight-search'),
+    path('seats/<int:flight_id>/', FlightSeatMapView.as_view(), name='flight-seats'),
+    path('book/confirm/', ConfirmBookingView.as_view(), name='confirm-booking'),
+    path('apply_coupon/', ApplyCouponView.as_view(), name='apply-coupon'),
+    path('deals/', DealsListView.as_view(), name='deals-list'),
+    path('deals/validate/', DealValidateView.as_view(), name='deal-validate'),
+    path('bookings/', BookingHistoryView.as_view(), name='booking-history'),
+    path('booking/<str:pnr>/', BookingDetailView.as_view(), name='booking-detail'),
+    path('booking/<str:pnr>/cancel/', CancelBookingView.as_view(), name='cancel-booking'),
+    path('booking/<str:pnr>/eticket/', DownloadETicketView.as_view(), name='download-eticket'),
+    path('payment/process/', ProcessPaymentView.as_view(), name='process-payment'),
+    path('explore/', ExploreDestinationsView.as_view(), name='explore-destinations'),
+
+    # Advanced Upgrades API Routes
+    path('ai/chat/', FlyEaseAIChatView.as_view(), name='ai-chat'),
+    path('weather/<str:airport_code>/', DestinationWeatherView.as_view(), name='destination-weather'),
+    path('requirements/', TravelRequirementsView.as_view(), name='travel-requirements'),
+    path('price-alert/create/', CreatePriceAlertView.as_view(), name='create-price-alert'),
+    path('price-alerts/', ListPriceAlertsView.as_view(), name='list-price-alerts'),
+    path('price-alert/<int:alert_id>/toggle/', TogglePriceAlertView.as_view(), name='toggle-price-alert'),
+    path('tracker/<str:flight_identifier>/', LiveFlightTrackerView.as_view(), name='live-flight-tracker'),
+    path('recommendations/', PersonalizedRecommendationsView.as_view(), name='personalized-recommendations'),
+    path('system-health/', SystemHealthStatusView.as_view(), name='system-health-status'),
+]
+

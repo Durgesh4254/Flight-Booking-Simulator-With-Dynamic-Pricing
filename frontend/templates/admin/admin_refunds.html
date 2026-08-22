@@ -1,0 +1,102 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Refund Center | FlyEase Admin{% endblock %}
+{% block page_title %}Cancellation & Refund Operations Center{% endblock %}
+
+{% block content %}
+<div class="admin-glass-card mb-4">
+  <div class="admin-glass-card-header">
+    <h3 class="admin-card-title"><i class="fa-solid fa-arrow-rotate-left" style="color:var(--admin-rose);"></i> Pending Refund Requests</h3>
+    <span class="admin-badge-pill" id="pending-refunds-badge">0 Pending</span>
+  </div>
+
+  <div class="admin-table-container">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>PNR</th>
+          <th>Passenger</th>
+          <th>Flight</th>
+          <th>Original Fare</th>
+          <th>Cancellation Fee</th>
+          <th>Refund Amount</th>
+          <th>Refund Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="refunds-table-body">
+        <tr>
+          <td colspan="8" style="text-align:center;padding:2rem;color:var(--admin-text-muted);">Loading refund requests...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  async function loadRefunds() {
+    try {
+      const res = await fetch('/admin-portal/api/bookings/?status=CANCELLED');
+      const data = await res.json();
+      const tbody = document.getElementById('refunds-table-body');
+      
+      const pendingCount = data.bookings.filter(b => b.refund_status === 'REQUESTED' || b.refund_status === 'PROCESSING').length;
+      document.getElementById('pending-refunds-badge').textContent = `${pendingCount} Pending`;
+
+      if (data.bookings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--admin-text-muted);">No cancellation refund requests currently open.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.bookings.map(b => `
+        <tr>
+          <td style="font-weight:700;color:var(--admin-cyan);">${b.pnr}</td>
+          <td>
+            <div style="font-weight:600;color:#fff;">${b.passenger_name}</div>
+            <div style="font-size:0.75rem;color:var(--admin-text-muted);">${b.passenger_email}</div>
+          </td>
+          <td>${b.flight_number} (${b.route})</td>
+          <td>₹${b.original_fare.toLocaleString()}</td>
+          <td style="color:var(--admin-rose);">₹${b.cancellation_fee.toLocaleString()}</td>
+          <td style="font-weight:800;color:var(--admin-emerald);font-size:1.05rem;">₹${b.refund_amount.toLocaleString()}</td>
+          <td><span class="status-pill ${b.refund_status === 'COMPLETED' ? 'status-in_flight' : (b.refund_status === 'REQUESTED' ? 'status-boarding' : 'status-cancelled')}">${b.refund_status}</span></td>
+          <td>
+            ${b.refund_status === 'REQUESTED' || b.refund_status === 'PROCESSING' ? `
+              <div style="display:flex;gap:0.4rem;">
+                <button type="button" class="admin-btn admin-btn-primary" style="padding:0.3rem 0.6rem;font-size:0.75rem;" onclick="processRefund(${b.id}, 'APPROVE')"><i class="fa-solid fa-check"></i> Approve</button>
+                <button type="button" class="admin-btn admin-btn-danger" style="padding:0.3rem 0.6rem;font-size:0.75rem;" onclick="processRefund(${b.id}, 'REJECT')"><i class="fa-solid fa-xmark"></i> Reject</button>
+              </div>
+            ` : '<span style="color:var(--admin-text-dim);font-size:0.8rem;">Processed</span>'}
+          </td>
+        </tr>
+      `).join('');
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  async function processRefund(bookingId, action) {
+    const notes = prompt(`Enter notes for ${action.toLowerCase()}ing refund:`, `Processed via Admin Portal`);
+    if (notes === null) return;
+
+    try {
+      const res = await fetch(`/admin-portal/api/booking/${bookingId}/refund/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: action, notes: notes })
+      });
+      const data = await res.json();
+      if (data.success) {
+        AdminApp.showToast(data.message);
+        loadRefunds();
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadRefunds);
+</script>
+{% endblock %}

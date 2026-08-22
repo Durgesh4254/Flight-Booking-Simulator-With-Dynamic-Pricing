@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Us ☎️ | 24×7 FlyEase Support{% endblock %}
+
+{% block content %}
+<section class="feature-page-container">
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-headset text-success me-1"></i> 24×7 Support</span>
+      <h1 class="page-title mt-2">Get in Touch with FlyEase</h1>
+      <p class="page-subtitle muted max-w-750 mx-auto">
+        Have questions about your flight booking, dynamic pricing simulation, or need technical assistance? Our aviation support specialists are here around the clock.
+      </p>
+    </div>
+  </div>
+
+  <div class="container max-w-1280 mt-5 pb-5">
+    <div class="grid-2 gap-4">
+      <!-- Contact Details -->
+      <div class="glass p-5 rounded-xl">
+        <h3 class="text-gradient mb-4">Contact Information</h3>
+        
+        <div class="contact-card-item flex align-center gap-3 p-3 glass-inner rounded-lg mb-3">
+          <div class="contact-icon-box flex align-center justify-center text-primary"><i class="fa-solid fa-phone font-large"></i></div>
+          <div>
+            <div class="tiny muted">TOLL-FREE & DIRECT SUPPORT</div>
+            <b><a href="tel:+919307145593" class="text-white text-decoration-none">9307145593</a></b>
+          </div>
+        </div>
+
+        <div class="contact-card-item flex align-center gap-3 p-3 glass-inner rounded-lg mb-3">
+          <div class="contact-icon-box flex align-center justify-center text-success"><i class="fa-solid fa-envelope font-large"></i></div>
+          <div>
+            <div class="tiny muted">CUSTOMER CARE EMAIL</div>
+            <b>support@flyease.aero</b>
+          </div>
+        </div>
+
+        <div class="contact-card-item flex align-center gap-3 p-3 glass-inner rounded-lg mb-3">
+          <div class="contact-icon-box flex align-center justify-center text-warning"><i class="fa-solid fa-location-dot font-large"></i></div>
+          <div>
+            <div class="tiny muted">HEADQUARTERS</div>
+            <b>Terminal 2, Chhatrapati Shivaji Maharaj International Airport, Mumbai, Maharashtra 400099</b>
+          </div>
+        </div>
+
+        <div class="contact-card-item flex align-center gap-3 p-3 glass-inner rounded-lg">
+          <div class="contact-icon-box flex align-center justify-center text-secondary"><i class="fa-solid fa-clock font-large"></i></div>
+          <div>
+            <div class="tiny muted">OPERATING HOURS</div>
+            <b>24 Hours / 7 Days a Week / 365 Days a Year</b>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Message Form -->
+      <div class="glass p-5 rounded-xl">
+        <h3 class="mb-4">Send Us a Message</h3>
+        <form onsubmit="event.preventDefault(); NotificationService.show('Thank you! Your message has been received. Our team will contact you shortly.', 'success'); this.reset();">
+          <div class="form-group mb-3">
+            <label class="small muted">Full Name *</label>
+            <input type="text" class="form-control form-control-lg" placeholder="John Doe" required>
+          </div>
+          <div class="form-group mb-3">
+            <label class="small muted">Email Address *</label>
+            <input type="email" class="form-control form-control-lg" placeholder="john@example.com" required>
+          </div>
+          <div class="form-group mb-3">
+            <label class="small muted">Booking PNR (Optional)</label>
+            <input type="text" class="form-control form-control-lg" placeholder="e.g. PNA6U7JEQN">
+          </div>
+          <div class="form-group mb-4">
+            <label class="small muted">Message *</label>
+            <textarea class="form-control form-control-lg" rows="4" placeholder="How can we help you today?" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-large w-100"><i class="fa-solid fa-paper-plane me-2"></i> Submit Inquiry</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

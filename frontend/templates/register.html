@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - FlyEase{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="auth-card glass">
+    <div class="auth-header">
+      <h2>Create an Account</h2>
+      <p>Join FlyEase to start booking your smart journeys today.</p>
+    </div>
+    
+    <form id="register-form">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="username"><i class="fa-solid fa-user"></i> Username</label>
+        <input type="text" id="username" name="username" class="form-control" required placeholder="Choose a username">
+      </div>
+
+      <div class="form-group">
+        <label for="email"><i class="fa-solid fa-envelope"></i> Email</label>
+        <input type="email" id="email" name="email" class="form-control" required placeholder="Enter your email">
+      </div>
+      
+      <div class="form-group">
+        <label for="password"><i class="fa-solid fa-lock"></i> Password</label>
+        <input type="password" id="password" name="password" class="form-control" required placeholder="Create a password">
+      </div>
+      
+      <button type="submit" class="btn btn-primary w-100 mt-3">
+        <i class="fa-solid fa-user-plus"></i> Sign Up
+      </button>
+    </form>
+    
+    <div class="auth-footer">
+      <p>Already have an account? <a href="/login/" class="text-gradient">Login here</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

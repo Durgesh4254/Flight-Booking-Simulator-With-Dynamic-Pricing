@@ -1,0 +1,53 @@
+from django.urls import path
+from . import admin_views
+
+urlpatterns = [
+    # Admin Web Pages
+    path('login/', admin_views.admin_login_view, name='admin-login'),
+    path('logout/', admin_views.admin_logout_view, name='admin-logout'),
+    path('dashboard/', admin_views.admin_dashboard_page, name='admin-dashboard'),
+    path('flights/', admin_views.admin_flights_page, name='admin-flights'),
+    path('airports/', admin_views.admin_airports_page, name='admin-airports'),
+    path('pricing/', admin_views.admin_pricing_page, name='admin-pricing'),
+    path('seats/', admin_views.admin_seats_page, name='admin-seats'),
+    path('deals/', admin_views.admin_deals_page, name='admin-deals'),
+    path('bookings/', admin_views.admin_bookings_page, name='admin-bookings'),
+    path('refunds/', admin_views.admin_refunds_page, name='admin-refunds'),
+    path('users/', admin_views.admin_users_page, name='admin-users'),
+    path('airlines/', admin_views.admin_airlines_page, name='admin-airlines'),
+    path('alerts/', admin_views.admin_alerts_page, name='admin-alerts'),
+    path('logs/', admin_views.admin_logs_page, name='admin-logs'),
+    path('system-monitor/', admin_views.admin_system_monitor_page, name='admin-system-monitor'),
+    path('requirements/', admin_views.admin_requirements_page, name='admin-requirements'),
+
+    # Admin REST APIs
+    path('api/kpis/', admin_views.api_dashboard_kpis, name='admin-api-kpis'),
+    path('api/analytics/', admin_views.api_analytics_charts, name='admin-api-analytics'),
+    path('api/system-health/', admin_views.api_system_health_live, name='admin-api-system-health'),
+    path('api/requirements/', admin_views.api_requirements_list, name='admin-api-requirements-list'),
+    path('api/requirement/save/', admin_views.api_requirement_save, name='admin-api-requirement-save'),
+    path('api/flights/', admin_views.api_flights_list, name='admin-api-flights-list'),
+    path('api/flight/save/', admin_views.api_flight_save, name='admin-api-flight-save'),
+    path('api/flight/<int:flight_id>/pricing/', admin_views.api_flight_pricing_details, name='admin-api-flight-pricing'),
+    path('api/flight/<int:flight_id>/pricing/apply/', admin_views.api_apply_flight_pricing, name='admin-api-flight-pricing-apply'),
+    path('api/flight/<int:flight_id>/seats/', admin_views.api_flight_seat_map, name='admin-api-flight-seats'),
+    path('api/seat/toggle/', admin_views.api_toggle_seat_status, name='admin-api-seat-toggle'),
+    path('api/pricing/simulate/', admin_views.api_simulate_pricing, name='admin-api-pricing-simulate'),
+    path('api/pricing/bulk/', admin_views.api_bulk_pricing_adjustment, name='admin-api-pricing-bulk'),
+    path('api/pricing/rules/', admin_views.api_pricing_rules_get_set, name='admin-api-pricing-rules'),
+    path('api/airports/', admin_views.api_airports_list, name='admin-api-airports-list'),
+    path('api/airport/save/', admin_views.api_airport_save, name='admin-api-airport-save'),
+    path('api/deals/', admin_views.api_deals_list, name='admin-api-deals-list'),
+    path('api/deal/save/', admin_views.api_deal_save, name='admin-api-deal-save'),
+    path('api/deal/<int:deal_id>/duplicate/', admin_views.api_deal_duplicate, name='admin-api-deal-duplicate'),
+    path('api/deal/budget-finder/', admin_views.api_deal_budget_finder, name='admin-api-deal-budget-finder'),
+    path('api/bookings/', admin_views.api_bookings_list, name='admin-api-bookings-list'),
+    path('api/booking/<int:booking_id>/refund/', admin_views.api_refund_process, name='admin-api-refund-process'),
+    path('api/users/', admin_views.api_users_list, name='admin-api-users-list'),
+    path('api/user/<int:user_id>/toggle/', admin_views.api_toggle_user_status, name='admin-api-user-toggle'),
+    path('api/airlines/', admin_views.api_airlines_list, name='admin-api-airlines-list'),
+    path('api/airline/save/', admin_views.api_airline_save, name='admin-api-airline-save'),
+    path('api/alerts/', admin_views.api_alerts_list, name='admin-api-alerts-list'),
+    path('api/logs/', admin_views.api_activity_logs_list, name='admin-api-logs-list'),
+]
+

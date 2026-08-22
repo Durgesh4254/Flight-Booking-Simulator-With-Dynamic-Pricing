@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Help Center ❓ | FlyEase Guide & Support{% endblock %}
+
+{% block content %}
+<section class="feature-page-container">
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-circle-question text-primary me-1"></i> Help & Guides</span>
+      <h1 class="page-title mt-2">FlyEase Help Center</h1>
+      <p class="page-subtitle muted max-w-750 mx-auto">
+        Everything you need to know about search algorithms, seat reservations, check-in, and managing your bookings.
+      </p>
+    </div>
+  </div>
+
+  <div class="container max-w-1280 mt-5 pb-5">
+    <div class="grid-3 gap-4 mb-5">
+      <div class="glass p-4 rounded-xl text-center">
+        <i class="fa-solid fa-plane-departure text-primary font-large mb-3" style="font-size:2.5rem;"></i>
+        <h4>Booking & Tickets</h4>
+        <p class="small muted mt-2">How to search flights, apply discount promo codes, and download single-page PDF E-Tickets.</p>
+        <a href="/faqs/" class="btn btn-outline btn-sm mt-3">Learn More</a>
+      </div>
+
+      <div class="glass p-4 rounded-xl text-center">
+        <i class="fa-solid fa-chair text-secondary font-large mb-3" style="font-size:2.5rem;"></i>
+        <h4>Seats & Add-ons</h4>
+        <p class="small muted mt-2">Selecting premium cabin seats, window/aisle filters, interactive undo, and extra luggage options.</p>
+        <a href="/baggage-info/" class="btn btn-outline btn-sm mt-3">View Details</a>
+      </div>
+
+      <div class="glass p-4 rounded-xl text-center">
+        <i class="fa-solid fa-rotate-left text-warning font-large mb-3" style="font-size:2.5rem;"></i>
+        <h4>Refunds & Changes</h4>
+        <p class="small muted mt-2">Instant cancellation rules, 24-hour departure policies, and mock ledger refunds.</p>
+        <a href="/refund/" class="btn btn-outline btn-sm mt-3">Refund Policy</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

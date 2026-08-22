@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking & Reservation Support 🎫 | FlyEase{% endblock %}
+
+{% block content %}
+<section class="feature-page-container">
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-ticket-simple text-primary me-1"></i> Reservations</span>
+      <h1 class="page-title mt-2">Booking & Reservation Support</h1>
+      <p class="page-subtitle muted max-w-750 mx-auto">
+        Everything you need to manage your confirmed flight reservations, download itineraries, and review fare breakdowns.
+      </p>
+    </div>
+  </div>
+
+  <div class="container max-w-1280 mt-5 pb-5">
+    <div class="grid-2 gap-4">
+      <div class="glass p-5 rounded-xl">
+        <h3 class="text-gradient mb-3">Booking Features</h3>
+        <ul class="muted small mb-0" style="line-height:2;">
+          <li><i class="fa-solid fa-circle-check text-success me-2"></i> <b>Instant PNR Generation:</b> Unique 10-character reference code assigned instantly.</li>
+          <li><i class="fa-solid fa-circle-check text-success me-2"></i> <b>Multi-Passenger Handling:</b> Book up to 9 travelers in one transaction.</li>
+          <li><i class="fa-solid fa-circle-check text-success me-2"></i> <b>Single-Page PDF Tickets:</b> High-resolution, vector-aligned E-Tickets ready for airport gate entry.</li>
+          <li><i class="fa-solid fa-circle-check text-success me-2"></i> <b>Dynamic Fare Insights:</b> Transparent breakdown of Base Fare, Dynamic Surcharges, and GST taxes.</li>
+        </ul>
+      </div>
+
+      <div class="glass p-5 rounded-xl">
+        <h3 class="mb-3">Lookup Your Booking</h3>
+        <p class="muted small">Enter your 10-character PNR code to retrieve your live E-Ticket.</p>
+        <form onsubmit="event.preventDefault(); const pnr = document.getElementById('support-pnr-input').value.trim(); if(pnr) window.open('/flights/booking/' + encodeURIComponent(pnr) + '/eticket/?view=1', '_blank');">
+          <div class="form-group mb-3">
+            <label class="small muted">Booking PNR *</label>
+            <input type="text" id="support-pnr-input" class="form-control form-control-lg font-mono text-uppercase" placeholder="e.g. PNA6U7JEQN" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-magnifying-glass me-2"></i> Find & View E-Ticket</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

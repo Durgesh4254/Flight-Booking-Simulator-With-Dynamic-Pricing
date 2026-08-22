@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Frequently Asked Questions (FAQs) 💬 | FlyEase{% endblock %}
+
+{% block content %}
+<section class="feature-page-container">
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-comments text-warning me-1"></i> Common Questions</span>
+      <h1 class="page-title mt-2">Frequently Asked Questions</h1>
+      <p class="page-subtitle muted max-w-750 mx-auto">
+        Answers to frequently asked questions regarding FlyEase dynamic pricing, ticket verification, and multi-passenger bookings.
+      </p>
+    </div>
+  </div>
+
+  <div class="container max-w-1280 mt-5 pb-5">
+    <div class="max-w-900 mx-auto">
+      <div class="glass p-4 rounded-xl mb-3">
+        <h4 class="text-primary mb-2">1. How does FlyEase Dynamic Pricing calculate ticket fares?</h4>
+        <p class="muted mb-0">
+          Our pricing algorithm simulates real-world airline revenue management. Ticket prices dynamically adjust based on remaining seat capacity (occupancy %), booking lead time before departure, high-demand peak travel hours, and route popularity factors.
+        </p>
+      </div>
+
+      <div class="glass p-4 rounded-xl mb-3">
+        <h4 class="text-primary mb-2">2. How do round-trip bookings and E-Tickets work?</h4>
+        <p class="muted mb-0">
+          When booking a round-trip, FlyEase handles both outbound and return flight legs within a single checkout. Upon payment confirmation, the platform generates **two distinct, verified PDF E-Tickets** with unique PNRs, departure schedules, and seat allocations.
+        </p>
+      </div>
+
+      <div class="glass p-4 rounded-xl mb-3">
+        <h4 class="text-primary mb-2">3. Can I undo or change my selected seats?</h4>
+        <p class="muted mb-0">
+          Yes! You can click the **Undo** button in the seat map header to remove your most recent selection, click **Reset** to clear all chosen seats, or directly click an active seat on the 3D cabin map to toggle its selection.
+        </p>
+      </div>
+
+      <div class="glass p-4 rounded-xl mb-3">
+        <h4 class="text-primary mb-2">4. Are payments real or simulated?</h4>
+        <p class="muted mb-0">
+          FlyEase operates as an advanced airline simulator. All payment flows (Card, UPI, Net Banking, Wallet, Counter) utilize simulated test tokens with 256-bit validation without charging actual bank accounts.
+        </p>
+      </div>
+
+      <div class="glass p-4 rounded-xl">
+        <h4 class="text-primary mb-2">5. Where can I find my past bookings?</h4>
+        <p class="muted mb-0">
+          Logged-in users can navigate to <a href="/dashboard/" class="text-primary underline">My Trips</a> anytime to view active flight radar routes, check status, and re-download verified single-page E-Ticket PDFs.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

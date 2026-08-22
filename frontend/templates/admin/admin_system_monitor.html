@@ -1,0 +1,168 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}FlyEase System Monitor | Real-Time Operations Health{% endblock %}
+{% block page_title %}🖥️ System & Operations Health Monitor{% endblock %}
+
+{% block content %}
+<div class="mb-4 flex justify-between align-center flex-wrap gap-2">
+  <div>
+    <h3 class="m-0 text-white"><i class="fa-solid fa-server text-cyan me-2"></i> Infrastructure & Third-Party API Health</h3>
+    <p class="muted small m-0 mt-1">Live automated ping probes across backend database, pricing engine, Groq AI, Weather, and flight tracking.</p>
+  </div>
+  <button type="button" class="admin-btn admin-btn-primary" onclick="loadLiveHealthChecks()">
+    <i class="fa-solid fa-rotate me-1" id="refresh-icon"></i> Refresh Status
+  </button>
+</div>
+
+<!-- System Status Grid -->
+<div class="kpi-grid mb-4" id="system-health-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+  <div class="kpi-card" style="text-align:center;padding:2rem;">
+    <i class="fa-solid fa-circle-notch fa-spin text-cyan fa-2x mb-2"></i>
+    <div class="muted">Running live health probes...</div>
+  </div>
+</div>
+
+<!-- Detailed Service Health Table -->
+<div class="admin-glass-card mb-4">
+  <div class="admin-glass-card-header">
+    <h3 class="admin-card-title"><i class="fa-solid fa-heart-pulse text-emerald"></i> Real-Time Service Status Details</h3>
+    <span class="admin-badge-pill" id="health-last-timestamp">Live</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Service Name</th>
+          <th>Status</th>
+          <th>Response Time</th>
+          <th>Last Checked</th>
+          <th>Diagnostics / Status Info</th>
+          <th>Recommended Action</th>
+        </tr>
+      </thead>
+      <tbody id="health-details-tbody">
+        <tr><td colspan="6" class="text-center p-4 muted">Loading service probes...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Incident & High Error Rate Alerts Trigger -->
+<div class="admin-glass-card">
+  <div class="admin-glass-card-header">
+    <h3 class="admin-card-title"><i class="fa-solid fa-triangle-exclamation text-amber"></i> Automated Service Incident Alerts</h3>
+  </div>
+  <div id="service-incident-list" style="display:flex;flex-direction:column;gap:0.75rem;">
+    <div class="glass-inner p-3 rounded flex justify-between align-center">
+      <div class="flex align-center gap-2">
+        <span class="live-pulse-dot" style="background:#10b981;"></span>
+        <span class="text-white">All core systems, AI modules, payment routes, and weather APIs are currently healthy.</span>
+      </div>
+      <span class="admin-badge-pill" style="background:rgba(16,185,129,0.2);color:#10b981;">0 Active Incidents</span>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  async function loadLiveHealthChecks() {
+    const icon = document.getElementById('refresh-icon');
+    if (icon) icon.classList.add('fa-spin');
+    
+    try {
+      const res = await fetch('/admin-portal/api/system-health/');
+      const data = await res.json();
+      const health = data.health || {};
+      
+      const grid = document.getElementById('system-health-grid');
+      const tbody = document.getElementById('health-details-tbody');
+      const timeTag = document.getElementById('health-last-timestamp');
+      if (timeTag) timeTag.textContent = `Updated: ${data.timestamp || 'Just now'}`;
+
+      let gridHtml = '';
+      let tableHtml = '';
+      let incidents = [];
+
+      Object.keys(health).forEach(sName => {
+        const item = health[sName];
+        const isOp = item.status === 'OPERATIONAL';
+        const isDeg = item.status === 'DEGRADED';
+        const statusCol = isOp ? 'var(--admin-emerald)' : (isDeg ? 'var(--admin-amber)' : 'var(--admin-rose)');
+        const statusIcon = isOp ? '🟢' : (isDeg ? '🟡' : '🔴');
+        const badgeBg = isOp ? 'rgba(16,185,129,0.15)' : (isDeg ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)');
+
+        if (!isOp) {
+          incidents.push({ service: sName, status: item.status, error: item.error });
+        }
+
+        gridHtml += `
+          <div class="kpi-card" style="border-left:4px solid ${statusCol};">
+            <div class="flex justify-between align-center mb-2">
+              <div class="kpi-label font-weight-bold" style="color:#fff;font-size:0.95rem;">${sName}</div>
+              <span style="font-size:1.1rem;">${statusIcon}</span>
+            </div>
+            <div class="flex justify-between align-center mt-2">
+              <div>
+                <span class="admin-badge-pill" style="background:${badgeBg};color:${statusCol};font-weight:700;">${item.status}</span>
+              </div>
+              <div class="text-right">
+                <div class="muted tiny">Response Time</div>
+                <strong style="color:var(--admin-cyan);font-family:monospace;font-size:1rem;">${item.latency_ms} ms</strong>
+              </div>
+            </div>
+            <div class="muted tiny mt-2">Checked at ${item.last_checked}</div>
+          </div>
+        `;
+
+        tableHtml += `
+          <tr>
+            <td><strong class="text-white">${sName}</strong></td>
+            <td><span class="admin-badge-pill" style="background:${badgeBg};color:${statusCol};">${item.status}</span></td>
+            <td><span class="text-cyan font-mono">${item.latency_ms} ms</span></td>
+            <td class="muted">${item.last_checked}</td>
+            <td>${item.error ? `<span class="text-danger">${item.error}</span>` : `<span class="text-emerald">✓ All probes passing smoothly</span>`}</td>
+            <td>${item.status === 'DOWN' ? `<span class="text-warning">Check API credentials / connectivity</span>` : `<span class="text-muted">No action required</span>`}</td>
+          </tr>
+        `;
+      });
+
+      if (grid) grid.innerHTML = gridHtml;
+      if (tbody) tbody.innerHTML = tableHtml;
+
+      const incList = document.getElementById('service-incident-list');
+      if (incList) {
+        if (incidents.length === 0) {
+          incList.innerHTML = `
+            <div class="glass-inner p-3 rounded flex justify-between align-center">
+              <div class="flex align-center gap-2">
+                <span class="live-pulse-dot" style="background:#10b981;"></span>
+                <span class="text-white">All core systems, AI modules, payment routes, and weather APIs are fully operational.</span>
+              </div>
+              <span class="admin-badge-pill" style="background:rgba(16,185,129,0.2);color:#10b981;">0 Active Incidents</span>
+            </div>
+          `;
+        } else {
+          incList.innerHTML = incidents.map(inc => `
+            <div class="glass-inner p-3 rounded flex justify-between align-center" style="border-left:4px solid var(--admin-rose);">
+              <div>
+                <strong class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> ${inc.service} Incident: ${inc.status}</strong>
+                <p class="muted small m-0 mt-1">${inc.error || 'High latency or probe timeout detected.'}</p>
+              </div>
+              <span class="admin-badge-pill" style="background:rgba(239,68,68,0.2);color:#ef4444;">Investigate API Configuration</span>
+            </div>
+          `).join('');
+        }
+      }
+
+    } catch (e) {
+      console.error(e);
+    } finally {
+      if (icon) icon.classList.remove('fa-spin');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadLiveHealthChecks);
+</script>
+{% endblock %}

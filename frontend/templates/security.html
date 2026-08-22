@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Security & Trust Center 🛡️ | FlyEase Protection{% endblock %}
+
+{% block content %}
+<section class="feature-page-container">
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-shield-halved text-success me-1"></i> Security Center</span>
+      <h1 class="page-title mt-2">Security, Encryption & Trust</h1>
+      <p class="page-subtitle muted max-w-750 mx-auto">
+        Learn how FlyEase protects passenger identities, secures reservation ledgers, and guarantees transaction integrity.
+      </p>
+    </div>
+  </div>
+
+  <div class="container max-w-1280 mt-5 pb-5">
+    <div class="grid-3 gap-4">
+      <div class="glass p-4 rounded-xl text-center">
+        <i class="fa-solid fa-lock text-success font-large mb-3" style="font-size:2.5rem;"></i>
+        <h4>256-Bit SSL/TLS</h4>
+        <p class="small muted mt-2">All API queries, seat selection payloads, and checkout requests are encrypted end-to-end.</p>
+      </div>
+
+      <div class="glass p-4 rounded-xl text-center">
+        <i class="fa-solid fa-shield-virus text-primary font-large mb-3" style="font-size:2.5rem;"></i>
+        <h4>CSRF & Anti-Tamper</h4>
+        <p class="small muted mt-2">Strict session isolation, cross-site request forgery tokens, and validated seat lock mechanisms.</p>
+      </div>
+
+      <div class="glass p-4 rounded-xl text-center">
+        <i class="fa-solid fa-database text-secondary font-large mb-3" style="font-size:2.5rem;"></i>
+        <h4>ACID Ledger Database</h4>
+        <p class="small muted mt-2">Relational database integrity ensures double-booking protection and atomic transaction commits.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Airlines Fleet Management | FlyEase Admin{% endblock %}
+{% block page_title %}Partner Airlines Fleet & Cabin Classes{% endblock %}
+
+{% block content %}
+<!-- Airline Fleet Toolbar -->
+<div class="admin-toolbar">
+  <div class="toolbar-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="airline-search-input" class="admin-input" placeholder="Search by airline name, IATA code, cabin classes..." oninput="filterAirlinesTable()">
+  </div>
+
+  <div class="toolbar-filters">
+    <button type="button" class="admin-btn admin-btn-primary" onclick="openCreateAirlineModal()">
+      <i class="fa-solid fa-plus"></i> Add New Airline Fleet
+    </button>
+  </div>
+</div>
+
+<!-- Partner Airlines Table -->
+<div class="admin-table-container">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Airline & Branding</th>
+        <th>IATA Code</th>
+        <th>Fleet Size</th>
+        <th>Supported Cabin Classes</th>
+        <th>Baggage Policy</th>
+        <th>Support Contact</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="airlines-table-body">
+      <tr>
+        <td colspan="8" style="text-align:center;padding:2rem;color:var(--admin-text-muted);">Loading partner fleet matrix...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ADD / EDIT AIRLINE MODAL -->
+<div class="admin-modal-backdrop" id="airlineModal">
+  <div class="admin-modal-dialog">
+    <div class="admin-modal-header">
+      <h3 class="admin-card-title" id="airlineModalTitle"><i class="fa-solid fa-plane-up text-primary"></i> Add New Airline Fleet</h3>
+      <button type="button" class="sidebar-toggle-btn" onclick="AdminApp.closeModal('airlineModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="airlineForm" onsubmit="handleSaveAirline(event)">
+      <input type="hidden" id="modal-airline-id">
+      <div class="admin-modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Airline Name</label>
+            <input type="text" id="modal-airline-name" class="admin-input" placeholder="e.g. Qatar Airways" required>
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">IATA Code (2 letters)</label>
+            <input type="text" id="modal-airline-code" class="admin-input" placeholder="e.g. QR" maxlength="3" required>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Fleet Size (Aircraft count)</label>
+            <input type="number" id="modal-airline-fleet" class="admin-input" placeholder="e.g. 250" required>
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Logo Image URL (Optional)</label>
+            <input type="url" id="modal-airline-logo" class="admin-input" placeholder="https://images.kiwi.com/airlines/64/QR.png">
+          </div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label style="font-size:0.8rem;color:var(--admin-text-muted);">Supported Cabin Classes</label>
+          <input type="text" id="modal-airline-cabins" class="admin-input" placeholder="Economy, Premium Economy, Business, First" required>
+        </div>
+
+        <div class="form-group mb-3">
+          <label style="font-size:0.8rem;color:var(--admin-text-muted);">Baggage Allowance Policy</label>
+          <input type="text" id="modal-airline-baggage" class="admin-input" placeholder="Cabin: 7kg | Check-in: 15kg (Domestic), 25kg (Intl)" required>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Contact Email</label>
+            <input type="email" id="modal-airline-email" class="admin-input" placeholder="support@airline.com">
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.8rem;color:var(--admin-text-muted);">Contact Support Phone</label>
+            <input type="text" id="modal-airline-phone" class="admin-input" placeholder="+91 1800-102-3456">
+          </div>
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="admin-btn admin-btn-outline" onclick="AdminApp.closeModal('airlineModal')">Cancel</button>
+        <button type="submit" class="admin-btn admin-btn-primary" id="save-airline-btn"><i class="fa-solid fa-floppy-disk"></i> Save Airline Fleet</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let allAirlinesData = [];
+
+  async function loadAirlines() {
+    try {
+      const res = await fetch('/admin-portal/api/airlines/');
+      const data = await res.json();
+      allAirlinesData = data.airlines;
+      renderAirlinesTable(allAirlinesData);
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  function renderAirlinesTable(airlines) {
+    const tbody = document.getElementById('airlines-table-body');
+    if (airlines.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--admin-text-muted);">No airlines found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = airlines.map(a => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:1rem;">
+            <div class="airline-logo-badge">
+              <img src="${a.logo_url}" alt="${a.name}" loading="lazy" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';">
+            </div>
+            <div class="airline-avatar-badge brand-${a.code.toLowerCase()}" style="display:none;">
+              ${a.code}
+            </div>
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:0.95rem;">${a.name}</div>
+              <div style="font-size:0.75rem;color:var(--admin-text-muted);">Global Alliance Member</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="admin-badge-pill" style="font-size:0.8rem;padding:0.25rem 0.6rem;">${a.code}</span></td>
+        <td style="font-weight:700;color:#fff;font-size:0.95rem;">${a.fleet_size} Aircraft</td>
+        <td style="color:var(--admin-text-muted);font-size:0.88rem;">${a.cabin_classes}</td>
+        <td style="color:var(--admin-text-dim);font-size:0.8rem;">${a.baggage_policy}</td>
+        <td style="font-size:0.8rem;">
+          <div style="color:var(--admin-cyan);">${a.contact_email}</div>
+          <div style="color:var(--admin-text-dim);font-size:0.75rem;">${a.contact_phone}</div>
+        </td>
+        <td><span class="status-pill status-in_flight"><i class="fa-solid fa-circle-check me-1"></i> ACTIVE PARTNER</span></td>
+        <td>
+          <button type="button" class="admin-btn admin-btn-outline" style="padding:0.3rem 0.6rem;font-size:0.75rem;" onclick="openEditAirlineModal(${JSON.stringify(a).replace(/"/g, '&quot;')})">
+            <i class="fa-solid fa-pen"></i> Edit
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function filterAirlinesTable() {
+    const q = document.getElementById('airline-search-input').value.toLowerCase().trim();
+    if (!q) {
+      renderAirlinesTable(allAirlinesData);
+      return;
+    }
+    const filtered = allAirlinesData.filter(a => 
+      a.name.toLowerCase().includes(q) || 
+      a.code.toLowerCase().includes(q) || 
+      a.cabin_classes.toLowerCase().includes(q)
+    );
+    renderAirlinesTable(filtered);
+  }
+
+  function openCreateAirlineModal() {
+    document.getElementById('airlineModalTitle').innerHTML = '<i class="fa-solid fa-plane-up text-primary"></i> Add New Airline Fleet';
+    document.getElementById('modal-airline-id').value = '';
+    document.getElementById('modal-airline-name').value = '';
+    document.getElementById('modal-airline-code').value = '';
+    document.getElementById('modal-airline-fleet').value = '50';
+    document.getElementById('modal-airline-logo').value = '';
+    document.getElementById('modal-airline-cabins').value = 'Economy, Premium Economy, Business, First';
+    document.getElementById('modal-airline-baggage').value = 'Cabin: 7kg | Check-in: 15kg (Domestic), 25kg (Intl)';
+    document.getElementById('modal-airline-email').value = 'support@airline.com';
+    document.getElementById('modal-airline-phone').value = '+91 1800-102-3456';
+    AdminApp.openModal('airlineModal');
+  }
+
+  function openEditAirlineModal(a) {
+    document.getElementById('airlineModalTitle').innerHTML = `<i class="fa-solid fa-pen text-primary"></i> Edit Airline ${a.name}`;
+    document.getElementById('modal-airline-id').value = a.id;
+    document.getElementById('modal-airline-name').value = a.name;
+    document.getElementById('modal-airline-code').value = a.code;
+    document.getElementById('modal-airline-fleet').value = a.fleet_size;
+    document.getElementById('modal-airline-logo').value = a.logo_url;
+    document.getElementById('modal-airline-cabins').value = a.cabin_classes;
+    document.getElementById('modal-airline-baggage').value = a.baggage_policy;
+    document.getElementById('modal-airline-email').value = a.contact_email;
+    document.getElementById('modal-airline-phone').value = a.contact_phone;
+    AdminApp.openModal('airlineModal');
+  }
+
+  async function handleSaveAirline(e) {
+    e.preventDefault();
+    const btn = document.getElementById('save-airline-btn');
+    btn.disabled = true;
+
+    const payload = {
+      id: document.getElementById('modal-airline-id').value || null,
+      name: document.getElementById('modal-airline-name').value.trim(),
+      code: document.getElementById('modal-airline-code').value.trim().toUpperCase(),
+      fleet_size: document.getElementById('modal-airline-fleet').value,
+      logo_url: document.getElementById('modal-airline-logo').value.trim(),
+      cabin_classes: document.getElementById('modal-airline-cabins').value.trim(),
+      baggage_policy: document.getElementById('modal-airline-baggage').value.trim(),
+      contact_email: document.getElementById('modal-airline-email').value.trim(),
+      contact_phone: document.getElementById('modal-airline-phone').value.trim(),
+    };
+
+    try {
+      const res = await fetch('/admin-portal/api/airline/save/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        AdminApp.showToast(data.message);
+        AdminApp.closeModal('airlineModal');
+        loadAirlines();
+      } else {
+        alert(data.error || 'Failed to save airline.');
+      }
+    } catch(e) {
+      console.error(e);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadAirlines);
+</script>
+{% endblock %}
+

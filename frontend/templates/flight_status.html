@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Live Flight Status & Airspace Radar 📡 | FlyEase{% endblock %}
+
+{% block content %}
+<section class="feature-page-container">
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-satellite-dish text-primary me-1"></i> Live Radar</span>
+      <h1 class="page-title mt-2">Airspace Flight Status Tracker</h1>
+      <p class="page-subtitle muted max-w-750 mx-auto">
+        Track real-time flight departure health, estimated gate arrivals, and aircraft operational readiness across the network.
+      </p>
+    </div>
+  </div>
+
+  <div class="container max-w-1280 mt-5 pb-5">
+    <div class="glass p-4 rounded-xl mb-4 flex justify-between align-center flex-wrap gap-3">
+      <div class="flex align-center gap-2">
+        <span class="badge badge-success"><i class="fa-solid fa-circle text-white me-1"></i> SYSTEM STATUS: 100% OPERATIONAL</span>
+        <span class="muted small">Average network on-time performance: <b>98.4%</b></span>
+      </div>
+      <a href="/" class="btn btn-primary btn-sm"><i class="fa-solid fa-magnifying-glass me-1"></i> Search Flights</a>
+    </div>
+
+    <!-- Live Status Cards -->
+    <div class="grid-3 gap-4">
+      <div class="glass p-4 rounded-xl">
+        <div class="flex justify-between align-center mb-2">
+          <strong class="text-gradient">AI-101</strong>
+          <span class="badge badge-success">ON SCHEDULE</span>
+        </div>
+        <div class="small"><b>BOM</b> (Mumbai) → <b>DEL</b> (Delhi)</div>
+        <div class="tiny muted mt-2">Departure: Today, 08:30 AM · Gate 14B · Boeing 737</div>
+      </div>
+
+      <div class="glass p-4 rounded-xl">
+        <div class="flex justify-between align-center mb-2">
+          <strong class="text-gradient">6E-4977</strong>
+          <span class="badge badge-success">ON SCHEDULE</span>
+        </div>
+        <div class="small"><b>BOM</b> (Mumbai) → <b>BLR</b> (Bengaluru)</div>
+        <div class="tiny muted mt-2">Departure: Today, 07:30 PM · Gate 08A · Airbus A320neo</div>
+      </div>
+
+      <div class="glass p-4 rounded-xl">
+        <div class="flex justify-between align-center mb-2">
+          <strong class="text-gradient">EK-501</strong>
+          <span class="badge badge-success">ON SCHEDULE</span>
+        </div>
+        <div class="small"><b>BOM</b> (Mumbai) → <b>DXB</b> (Dubai)</div>
+        <div class="tiny muted mt-2">Departure: Today, 11:15 PM · Gate 22C · Boeing 777-300ER</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

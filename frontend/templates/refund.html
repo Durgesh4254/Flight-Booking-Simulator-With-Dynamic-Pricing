@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancellation & Refund Policy 💰 | FlyEase{% endblock %}
+
+{% block content %}
+<section class="feature-page-container">
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-hand-holding-dollar text-warning me-1"></i> Policy</span>
+      <h1 class="page-title mt-2">Cancellation & Refund Policy</h1>
+      <p class="page-subtitle muted max-w-750 mx-auto">
+        Clear, transparent guidelines on booking cancellations, automated refund calculations, and ledger processing.
+      </p>
+    </div>
+  </div>
+
+  <div class="container max-w-1280 mt-5 pb-5">
+    <div class="glass p-5 rounded-xl max-w-900 mx-auto">
+      <div class="grid-2 gap-3 mb-4">
+        <div class="glass-inner p-4 rounded-lg">
+          <div class="badge badge-success mb-2">FULL REFUND (100%)</div>
+          <h5>Cancellations >24 Hours</h5>
+          <p class="small muted mb-0">Cancellations made at least 24 hours prior to scheduled flight departure are eligible for a 100% refund of base fare, dynamic fare, and add-on fees.</p>
+        </div>
+
+        <div class="glass-inner p-4 rounded-lg">
+          <div class="badge badge-warning mb-2">STANDARD REFUND (75%)</div>
+          <h5>Cancellations <24 Hours</h5>
+          <p class="small muted mb-0">Cancellations made within 24 hours of departure are refunded at 75% of total ticket value, with 25% retained as airline seat reallocation surcharge.</p>
+        </div>
+      </div>
+
+      <h4 class="text-primary mb-2">Instant Refund Processing</h4>
+      <p class="muted small mb-0">
+        All approved refund requests are calculated automatically and reflected instantly in your transaction history ledger and payment receipt records.
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

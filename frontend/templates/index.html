@@ -1,0 +1,2024 @@
+{% extends 'base.html' %}
+
+{% block title %}FlyEase ✈️ | Smart Flight Booking{% endblock %}
+
+{% block content %}
+<!-- STEP 1: LANDING & SEARCH -->
+<section id="step-search" class="step-section active">
+
+  <!-- ======= ANIMATED HERO WITH VIDEO BACKGROUND ======= -->
+  <div class="hero-mega" id="home">
+
+    <!-- DUAL VIDEO LAYERS for seamless crossfade -->
+    <div class="video-background">
+      <video id="video-layer-a" class="video-layer video-layer-a" preload="auto" muted playsinline></video>
+      <video id="video-layer-b" class="video-layer video-layer-b" preload="metadata" muted playsinline></video>
+    </div>
+
+    <!-- Dark navy gradient overlay + vignette for text readability -->
+    <div class="video-overlay"></div>
+
+    <!-- Subtle decorative particle canvas (decorative only, above video) -->
+    <canvas id="particle-canvas" class="particle-canvas"></canvas>
+
+    <!-- Floating plane silhouette (subtle decoration) -->
+    <div class="hero-floating-plane">
+      <svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5,20 Q30,5 60,20 Q30,35 5,20" fill="rgba(99,102,241,0.10)" />
+        <path d="M60,20 Q80,18 92,19 L60,22 Z" fill="rgba(14,165,233,0.15)" />
+        <polygon points="25,20 45,20 35,35 20,35" fill="rgba(99,102,241,0.08)" />
+        <polygon points="28,18 48,18 60,8 48,8" fill="rgba(14,165,233,0.08)" />
+      </svg>
+    </div>
+
+    <div class="hero-content">
+
+      <!-- Pill badge -->
+      <div class="hero-pill-badge reveal" data-reveal-delay="0.1">
+        <span class="pill-dot"></span>
+        <span>Live Dynamic Pricing — Updated Every 30 Seconds</span>
+      </div>
+
+      <!-- Main headline with typewriter -->
+      <h1 class="hero-headline reveal" data-reveal-delay="0.25">
+        <span class="text-gradient">FLY SMARTER.</span>
+        <br>
+        <span id="typewriter-text" class="typewriter-word">BOOK BETTER.</span>
+        <span class="typewriter-cursor">|</span>
+      </h1>
+
+      <p class="hero-subtext reveal" data-reveal-delay="0.4">
+        Experience the future of intelligent flight booking with
+        real-time dynamic pricing.
+      </p>
+
+      <!-- Hero action buttons (as per spec) -->
+      <div class="hero-actions reveal" data-reveal-delay="0.7">
+        <button type="button" class="btn btn-primary btn-large hero-cta-primary" onclick="document.getElementById('search-form').scrollIntoView({behavior:'smooth'});">
+          <i class="fa-solid fa-magnifying-glass-plane me-2"></i> Search Flights
+        </button>
+        <button type="button" class="btn btn-ghost btn-large hero-cta-secondary" onclick="document.getElementById('destinations-section').scrollIntoView({behavior:'smooth'});">
+          <i class="fa-solid fa-map-location-dot me-2"></i> Explore Destinations
+        </button>
+      </div>
+
+      <!-- Trust indicators row -->
+      <div class="hero-trust-row reveal" data-reveal-delay="0.55">
+        <div class="trust-item">
+          <i class="fa-solid fa-shield-halved text-success"></i>
+          <span>Secure Mock Payments</span>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+          <i class="fa-solid fa-bolt text-warning"></i>
+          <span>Real-Time Pricing Engine</span>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+          <i class="fa-solid fa-star text-primary"></i>
+          <span>4.9/5 Satisfaction Score</span>
+        </div>
+      </div>
+
+      <!-- Premium Glassmorphism Flight Search Card -->
+      <div class="search-widget-horizontal glass search-card-glass reveal" data-reveal-delay="0.55">
+        <form id="search-form" class="horizontal-form">
+          {% csrf_token %}
+          <div class="trip-options flex gap-3 mb-3">
+            <label class="radio-label"><input type="radio" name="tripType" value="oneway" checked> <span>One-way</span></label>
+            <label class="radio-label"><input type="radio" name="tripType" value="roundtrip"> <span>Round-trip</span></label>
+          </div>
+          <div class="search-grid">
+            <div class="form-group position-relative">
+              <label for="origin"><i class="fa-solid fa-plane-departure text-primary"></i> From</label>
+              <input type="text" id="origin" class="form-control form-control-lg" placeholder="City or Airport" required autocomplete="off">
+              <div id="origin-suggestions" class="suggestions-dropdown hidden glass"></div>
+            </div>
+            <div class="swap-wrapper flex justify-center align-center">
+              <button type="button" id="swap-routes" class="btn-icon swap-btn" title="Swap routes"><i class="fa-solid fa-right-left"></i></button>
+            </div>
+            <div class="form-group position-relative">
+              <label for="destination"><i class="fa-solid fa-plane-arrival text-primary"></i> To</label>
+              <input type="text" id="destination" class="form-control form-control-lg" placeholder="City or Airport" required autocomplete="off">
+              <div id="destination-suggestions" class="suggestions-dropdown hidden glass"></div>
+            </div>
+            <div class="form-group">
+              <label for="depart-date"><i class="fa-regular fa-calendar text-primary"></i> Departure</label>
+              <input type="date" id="depart-date" class="form-control form-control-lg" required>
+            </div>
+            <div class="form-group">
+              <label for="return-date"><i class="fa-regular fa-calendar-check text-muted"></i> Return</label>
+              <input type="date" id="return-date" class="form-control form-control-lg" disabled>
+            </div>
+            <div class="form-group">
+              <label for="passengers"><i class="fa-solid fa-users text-primary"></i> Passengers</label>
+              <input type="number" id="passengers" class="form-control form-control-lg" min="1" max="9" value="1" required>
+            </div>
+            <div class="form-group">
+              <label for="cabin-class"><i class="fa-solid fa-couch text-primary"></i> Cabin Class</label>
+              <select id="cabin-class" class="form-control form-control-lg">
+                <option value="ECONOMY">Economy</option>
+                <option value="PREMIUM_ECONOMY">Premium</option>
+                <option value="BUSINESS">Business</option>
+                <option value="FIRST">First</option>
+              </select>
+            </div>
+          </div>
+          <div class="search-action mt-3 text-right">
+            <button type="submit" id="search-btn" class="btn btn-primary btn-large">
+              <span id="search-btn-text"><i class="fa-solid fa-magnifying-glass me-2"></i>Search Flights</span>
+              <span id="search-loading" class="hidden"><i class="fa-solid fa-spinner fa-spin me-2"></i> Searching...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Floating live price tickers -->
+      <div class="hero-live-tickers reveal" data-reveal-delay="0.85">
+        <div class="ticker-item">
+          <span class="ticker-route">BOM <i class="fa-solid fa-arrow-right" style="font-size:.6rem;"></i> DEL</span>
+          <span class="ticker-price text-gradient">&#8377;6,299</span>
+          <span class="ticker-change up"><i class="fa-solid fa-arrow-up"></i> 3%</span>
+        </div>
+        <div class="ticker-item">
+          <span class="ticker-route">DEL <i class="fa-solid fa-arrow-right" style="font-size:.6rem;"></i> DXB</span>
+          <span class="ticker-price text-gradient">&#8377;14,850</span>
+          <span class="ticker-change down"><i class="fa-solid fa-arrow-down"></i> 5%</span>
+        </div>
+        <div class="ticker-item">
+          <span class="ticker-route">BLR <i class="fa-solid fa-arrow-right" style="font-size:.6rem;"></i> SIN</span>
+          <span class="ticker-price text-gradient">&#8377;11,400</span>
+          <span class="ticker-change up"><i class="fa-solid fa-arrow-up"></i> 1%</span>
+        </div>
+        <div class="ticker-item">
+          <span class="ticker-route">HYD <i class="fa-solid fa-arrow-right" style="font-size:.6rem;"></i> LHR</span>
+          <span class="ticker-price text-gradient">&#8377;32,700</span>
+          <span class="ticker-change down"><i class="fa-solid fa-arrow-down"></i> 2%</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Airport LIVE indicator (bottom-right) -->
+    <div class="airport-live-indicator">
+      <span class="live-dot"></span>
+      <span class="live-label">● AIRPORT LIVE</span>
+    </div>
+
+    <!-- Video progress indicator dots (bottom-center) -->
+    <div class="video-progress-dots" id="video-progress-dots" aria-hidden="true"></div>
+
+  </div>
+
+  <!-- ======= QUICK ACTIONS BAR ======= -->
+  <div class="quick-actions-section">
+    <div class="max-w-1280 mx-auto px-3">
+      <div class="quick-actions-card glass p-3">
+        <div class="quick-actions-grid">
+          <button type="button" class="quick-action-btn" onclick="window.scrollTo({top:0,behavior:'smooth'});document.getElementById('origin').focus();">
+            <div class="qa-icon-wrap" style="background:linear-gradient(135deg,#0284c7,#38bdf8);"><i class="fa-solid fa-plane-departure"></i></div>
+            <div class="qa-text">
+              <span class="qa-title">Search Flights</span>
+              <span class="qa-desc">500+ live routes</span>
+            </div>
+          </button>
+          <button type="button" class="quick-action-btn" onclick="document.getElementById('explore-no-dest').scrollIntoView({behavior:'smooth'});">
+            <div class="qa-icon-wrap" style="background:linear-gradient(135deg,#10b981,#059669);"><i class="fa-solid fa-compass"></i></div>
+            <div class="qa-text">
+              <span class="qa-title">Explore Hub</span>
+              <span class="qa-desc">Where Can I Go?</span>
+            </div>
+          </button>
+          <button type="button" class="quick-action-btn" onclick="window.location.href='/deals/'">
+            <div class="qa-icon-wrap" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><i class="fa-solid fa-tags"></i></div>
+            <div class="qa-text">
+              <span class="qa-title">Special Deals</span>
+              <span class="qa-desc">Up to 40% OFF</span>
+            </div>
+          </button>
+          <button type="button" class="quick-action-btn" onclick="window.location.href='/dashboard/'">
+            <div class="qa-icon-wrap" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);"><i class="fa-solid fa-ticket"></i></div>
+            <div class="qa-text">
+              <span class="qa-title">My Trips</span>
+              <span class="qa-desc">E-Tickets & Radar</span>
+            </div>
+          </button>
+          <button type="button" class="quick-action-btn" onclick="app.toggleAIChat()">
+            <div class="qa-icon-wrap qa-pulse" style="background:linear-gradient(135deg,#0284c7,#6366f1);"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <div class="qa-text">
+              <span class="qa-title">FlyEase AI</span>
+              <span class="qa-desc">Smart Assistant</span>
+            </div>
+          </button>
+          <button type="button" class="quick-action-btn" onclick="app.openPriceAlertModal()">
+            <div class="qa-icon-wrap" style="background:linear-gradient(135deg,#ec4899,#be185d);"><i class="fa-solid fa-bell"></i></div>
+            <div class="qa-text">
+              <span class="qa-title">Price Alerts</span>
+              <span class="qa-desc">Track fare drops</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= AIRLINE MARQUEE ======= -->
+  <div class="airline-marquee-section">
+    <p class="marquee-label muted">Simulating routes for top airlines</p>
+    <div class="marquee-track">
+      <div class="marquee-inner">
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> IndiGo</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Air India</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> SpiceJet</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Vistara</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Emirates</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Lufthansa</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Singapore Air</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Qatar Airways</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> British Airways</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Air France</span>
+        <!-- duplicate for seamless loop -->
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> IndiGo</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Air India</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> SpiceJet</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Vistara</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Emirates</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Lufthansa</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Singapore Air</span>
+        <span class="airline-name"><i class="fa-solid fa-plane"></i> Qatar Airways</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= EXPLORE WITHOUT DESTINATION: WHERE CAN I GO? ======= -->
+  <div class="explore-without-destination-section py-5" id="explore-no-dest">
+    <div class="max-w-1280 mx-auto px-3">
+      <div class="section-header text-center mb-4 reveal">
+        <span class="section-pill mb-2"><i class="fa-solid fa-compass text-primary me-1"></i> Interactive Destination Finder</span>
+        <h2 class="mt-2 text-gradient font-display">WHERE CAN I GO?</h2>
+        <p class="muted max-w-700 mx-auto">Discover top getaways, secret beaches, mountain escapes, and global skylines tailored to your budget and travel vibe.</p>
+      </div>
+
+      <!-- Explore Control Panel -->
+      <div class="explore-filter-card glass p-4 mb-4 reveal">
+        <div class="flex justify-between align-center flex-wrap gap-4">
+          <!-- Budget Slider -->
+          <div class="explore-budget-control flex-1" style="min-width: 260px;">
+            <div class="flex justify-between align-center mb-2">
+              <span class="font-weight-bold text-white small"><i class="fa-solid fa-wallet text-warning me-1"></i> Max Budget:</span>
+              <span class="badge badge-primary font-mono" id="explore-budget-val">₹12,000</span>
+            </div>
+            <input type="range" id="explore-budget-slider" class="form-range w-100" min="2000" max="50000" step="500" value="18500" oninput="app.updateExploreBudget(this.value)">
+            <div class="flex justify-between text-muted font-mono" style="font-size: 0.75rem;">
+              <span>₹2,000</span>
+              <span>₹15,000</span>
+              <span>₹30,000</span>
+              <span>₹50,000+</span>
+            </div>
+          </div>
+
+          <!-- Date Filters -->
+          <div class="explore-date-control" style="min-width: 260px;">
+            <label class="font-weight-bold text-white small mb-2 d-block"><i class="fa-regular fa-calendar-days text-cyan me-1"></i> Travel Window:</label>
+            <div class="flex gap-2 flex-wrap" id="explore-date-pills">
+              <button type="button" class="btn btn-outline btn-xs explore-date-btn active" data-date="this-weekend" onclick="app.setExploreDate(this, 'this-weekend')">This Weekend</button>
+              <button type="button" class="btn btn-outline btn-xs explore-date-btn" data-date="next-weekend" onclick="app.setExploreDate(this, 'next-weekend')">Next Weekend</button>
+              <button type="button" class="btn btn-outline btn-xs explore-date-btn" data-date="next-month" onclick="app.setExploreDate(this, 'next-month')">Next Month</button>
+              <button type="button" class="btn btn-outline btn-xs explore-date-btn" data-date="flexible" onclick="app.setExploreDate(this, 'flexible')">Flexible Dates</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="explore-categories-row mt-4 pt-3 border-top border-secondary">
+          <label class="font-weight-bold text-white small mb-2 d-block"><i class="fa-solid fa-tags text-primary me-1"></i> Travel Category:</label>
+          <div class="flex gap-2 flex-wrap" id="explore-cat-pills">
+            <button type="button" class="btn btn-outline btn-sm explore-cat-btn active" data-cat="all" onclick="app.setExploreCategory(this, 'all')">✨ All Destinations</button>
+            <button type="button" class="btn btn-outline btn-sm explore-cat-btn" data-cat="beaches" onclick="app.setExploreCategory(this, 'beaches')">🌴 Beaches</button>
+            <button type="button" class="btn btn-outline btn-sm explore-cat-btn" data-cat="mountains" onclick="app.setExploreCategory(this, 'mountains')">🏔️ Mountains</button>
+            <button type="button" class="btn btn-outline btn-sm explore-cat-btn" data-cat="cities" onclick="app.setExploreCategory(this, 'cities')">🏙️ Cities</button>
+            <button type="button" class="btn btn-outline btn-sm explore-cat-btn" data-cat="heritage" onclick="app.setExploreCategory(this, 'heritage')">🕌 Heritage</button>
+            <button type="button" class="btn btn-outline btn-sm explore-cat-btn" data-cat="nature" onclick="app.setExploreCategory(this, 'nature')">🍃 Nature</button>
+            <button type="button" class="btn btn-outline btn-sm explore-cat-btn" data-cat="adventure" onclick="app.setExploreCategory(this, 'adventure')">🎉 Adventure</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Destination Results Grid -->
+      <div class="destinations-grid-2col" id="explore-results-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div id="explore-load-more-container" class="text-center mt-4" style="display: none;">
+        <button type="button" class="btn btn-outline btn-sm" onclick="app.loadMoreExploreDestinations()">
+          Load More Destinations (<span id="explore-remaining-count">0</span> remaining)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= POPULAR DESTINATIONS ======= -->
+  <div class="destinations-section">
+    <div class="max-w-1280">
+      <div class="section-header text-center mb-5 reveal">
+        <span class="section-pill">Trending Routes</span>
+        <h2 class="mt-2">Fly to Top Global Destinations</h2>
+        <p class="muted">Live fares, instant booking, and guaranteed seat selection</p>
+      </div>
+      <div class="destinations-grid-2col">
+        <div class="dest-card reveal" onclick="document.getElementById('destination').value='DXB'">
+          <img src="https://images.pexels.com/photos/2044434/pexels-photo-2044434.jpeg?auto=compress&cs=tinysrgb&w=800" referrerpolicy="no-referrer" loading="lazy" class="dest-img" alt="Dubai">
+          <div class="dest-overlay">
+            <div class="dest-badge"><i class="fa-solid fa-fire"></i> Hot Deal</div>
+            <h3>Dubai (DXB)</h3>
+            <p class="text-secondary mb-0">From &#8377;7,999</p>
+          </div>
+        </div>
+        <div class="dest-card reveal" style="transition-delay: 0.1s;" onclick="document.getElementById('destination').value='LHR'">
+          <img src="https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg?auto=compress&cs=tinysrgb&w=800" referrerpolicy="no-referrer" loading="lazy" class="dest-img" alt="London">
+          <div class="dest-overlay">
+            <h3>London (LHR)</h3>
+            <p class="text-secondary mb-0">From &#8377;28,999</p>
+          </div>
+        </div>
+        <div class="dest-card reveal" style="transition-delay: 0.2s;" onclick="document.getElementById('destination').value='SIN'">
+          <img src="https://images.pexels.com/photos/777059/pexels-photo-777059.jpeg?auto=compress&cs=tinysrgb&w=800" referrerpolicy="no-referrer" loading="lazy" class="dest-img" alt="Singapore">
+          <div class="dest-overlay">
+            <div class="dest-badge dest-badge-green"><i class="fa-solid fa-leaf"></i> Eco Choice</div>
+            <h3>Singapore (SIN)</h3>
+            <p class="text-secondary mb-0">From &#8377;12,499</p>
+          </div>
+        </div>
+        <div class="dest-card reveal" style="transition-delay: 0.3s;" onclick="document.getElementById('destination').value='HND'">
+          <img src="https://images.pexels.com/photos/2506923/pexels-photo-2506923.jpeg?auto=compress&cs=tinysrgb&w=800" referrerpolicy="no-referrer" loading="lazy" class="dest-img" alt="Tokyo">
+          <div class="dest-overlay">
+            <h3>Tokyo (HND)</h3>
+            <p class="text-secondary mb-0">From &#8377;35,000</p>
+          </div>
+        </div>
+        <div class="dest-card reveal" style="transition-delay: 0.4s;" onclick="document.getElementById('destination').value='JFK'">
+          <img src="https://images.pexels.com/photos/466685/pexels-photo-466685.jpeg?auto=compress&cs=tinysrgb&w=800" referrerpolicy="no-referrer" loading="lazy" class="dest-img" alt="New York">
+          <div class="dest-overlay">
+            <h3>New York (JFK)</h3>
+            <p class="text-secondary mb-0">From &#8377;42,500</p>
+          </div>
+        </div>
+        <div class="dest-card reveal" style="transition-delay: 0.5s;" onclick="document.getElementById('destination').value='CDG'">
+          <img src="https://images.pexels.com/photos/532826/pexels-photo-532826.jpeg?auto=compress&cs=tinysrgb&w=800" referrerpolicy="no-referrer" loading="lazy" class="dest-img" alt="Paris">
+          <div class="dest-overlay">
+            <div class="dest-badge dest-badge-purple"><i class="fa-solid fa-star"></i> Premium</div>
+            <h3>Paris (CDG)</h3>
+            <p class="text-secondary mb-0">From &#8377;38,200</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= AUTOMATIC CENTRAL FEATURE DISCOVERY HUB ======= -->
+  <section class="central-feature-hub-section py-5" id="flyease-capabilities">
+    <div class="max-w-1280 mx-auto px-3">
+      
+      <!-- Section Header with Search & Badge -->
+      <div class="section-header text-center mb-5 reveal">
+        <div class="flex justify-center align-center gap-2 mb-2">
+          <span class="section-pill"><i class="fa-solid fa-layer-group text-primary me-1"></i> Product Capabilities & Experience</span>
+          <span class="badge badge-cyan font-mono" id="feature-count-badge">18+ Capabilities</span>
+        </div>
+        <h2 class="mt-2 text-gradient font-display" style="font-size: 2.3rem;">Everything You Need to Fly Smarter</h2>
+        <p class="muted max-w-700 mx-auto" style="font-size: 1.05rem;">
+          Explore FlyEase's next-generation aviation suite — from AI-grounded route finding and 3D cabin visualizers to real-time dynamic pricing, live flight radars, and automated refund engines.
+        </p>
+
+        <!-- Live Feature Search Bar -->
+        <div class="feature-search-wrap max-w-600 mx-auto mt-4">
+          <div class="feature-search-box glass flex align-center p-2">
+            <i class="fa-solid fa-magnifying-glass text-secondary ms-3 me-2"></i>
+            <input type="text" id="feature-search-input" class="feature-search-input flex-1" placeholder="Search FlyEase features (e.g. AI, 3D Seats, Radar, Pricing, Weather, Passport)..." oninput="app.filterFeatureCards()">
+            <button type="button" class="btn btn-outline btn-xs me-1 text-muted" id="clear-feature-search" onclick="document.getElementById('feature-search-input').value='';app.filterFeatureCards();" style="display:none;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Filter Pills Bar -->
+      <div class="feature-categories-bar flex justify-center gap-2 flex-wrap mb-5 reveal" id="feature-category-filters">
+        <!-- Dynamically rendered from FLYEASE_FEATURE_CATEGORIES -->
+      </div>
+
+      <!-- Feature Cards Grid (Automatically populated from FLYEASE_FEATURE_REGISTRY) -->
+      <div class="feature-cards-grid" id="feature-cards-grid">
+        <!-- Injected dynamically via script.js -->
+      </div>
+
+      <!-- No Matching Features Fallback -->
+      <div id="no-features-found" class="glass text-center p-5 hidden max-w-600 mx-auto mt-4">
+        <i class="fa-solid fa-compass-drafting text-muted fa-3x mb-3"></i>
+        <h4 class="text-white">No Matching Capabilities Found</h4>
+        <p class="text-muted small">Try searching for "AI", "Seats", "Pricing", "Weather", or "Radar".</p>
+        <button type="button" class="btn btn-primary btn-sm mt-2" onclick="document.getElementById('feature-search-input').value='';app.setFeatureCategory('all');">
+          Reset Filter
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======= INTERACTIVE FLYEASE JOURNEY ROADMAP ======= -->
+  <section class="flyease-journey-section py-5">
+    <div class="max-w-1280 mx-auto px-3">
+      <div class="section-header text-center mb-5 reveal">
+        <span class="section-pill"><i class="fa-solid fa-route text-cyan me-1"></i> End-to-End Traveler Experience</span>
+        <h2 class="mt-2 text-gradient font-display">Your FlyEase Journey</h2>
+        <p class="muted max-w-700 mx-auto">From live flight search to takeoff and travel stamping — a frictionless simulation of modern commercial aviation.</p>
+      </div>
+
+      <!-- Interactive Scrolling Journey Track -->
+      <div class="journey-track-container glass p-4 p-md-5 reveal">
+        <div class="journey-airplane-tracker" id="journey-airplane-tracker">
+          <div class="journey-plane-icon"><i class="fa-solid fa-plane-up"></i></div>
+          <div class="journey-plane-pulse"></div>
+        </div>
+
+        <div class="journey-steps-grid">
+          <div class="journey-step-card active" data-step="1" onclick="window.scrollTo({top:0,behavior:'smooth'});document.getElementById('origin').focus();">
+            <div class="journey-step-num">01</div>
+            <div class="journey-step-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <h5>Search</h5>
+            <p>500+ live routes with instant origin/destination matching.</p>
+            <span class="journey-action-tag">Step 1</span>
+          </div>
+
+          <div class="journey-step-card" data-step="2" onclick="app.openFlightComparison()">
+            <div class="journey-step-num">02</div>
+            <div class="journey-step-icon"><i class="fa-solid fa-code-compare"></i></div>
+            <h5>Compare</h5>
+            <p>Side-by-side fares, amenities, emissions & baggage rules.</p>
+            <span class="journey-action-tag">Step 2</span>
+          </div>
+
+          <div class="journey-step-card" data-step="3" onclick="window.scrollTo({top:0,behavior:'smooth'});">
+            <div class="journey-step-num">03</div>
+            <div class="journey-step-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <h5>Dynamic Pricing</h5>
+            <p>Live demand & load-factor pricing calculations.</p>
+            <span class="journey-action-tag">Step 3</span>
+          </div>
+
+          <div class="journey-step-card" data-step="4" onclick="window.scrollTo({top:0,behavior:'smooth'});">
+            <div class="journey-step-num">04</div>
+            <div class="journey-step-icon"><i class="fa-solid fa-couch"></i></div>
+            <h5>3D Seats</h5>
+            <p>Spatial 3D cabin orbit, window/aisle & exit row upgrades.</p>
+            <span class="journey-action-tag">Step 4</span>
+          </div>
+
+          <div class="journey-step-card" data-step="5" onclick="window.location.href='/deals/'">
+            <div class="journey-step-num">05</div>
+            <div class="journey-step-icon"><i class="fa-solid fa-tags"></i></div>
+            <h5>Apply Deals</h5>
+            <p>Student, family & weekend promo discount validation.</p>
+            <span class="journey-action-tag">Step 5</span>
+          </div>
+
+          <div class="journey-step-card" data-step="6" onclick="window.scrollTo({top:0,behavior:'smooth'});">
+            <div class="journey-step-num">06</div>
+            <div class="journey-step-icon"><i class="fa-solid fa-credit-card"></i></div>
+            <h5>Mock Payment</h5>
+            <p>Cards, live UPI format verification & Net Banking.</p>
+            <span class="journey-action-tag">Step 6</span>
+          </div>
+
+          <div class="journey-step-card" data-step="7" onclick="window.location.href='/dashboard/'">
+            <div class="journey-step-num">07</div>
+            <div class="journey-step-icon"><i class="fa-solid fa-file-pdf"></i></div>
+            <h5>E-Ticket & Email</h5>
+            <p>Instant PDF ticket download with barcode & email dispatch.</p>
+            <span class="journey-action-tag">Step 7</span>
+          </div>
+
+          <div class="journey-step-card" data-step="8" onclick="window.location.href='/dashboard/'">
+            <div class="journey-step-num">08</div>
+            <div class="journey-step-icon"><i class="fa-solid fa-satellite-dish"></i></div>
+            <h5>Live Radar & Passport</h5>
+            <p>In-flight radar telemetry, gate alerts & travel stamps.</p>
+            <span class="journey-action-tag">Step 8</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= INTERACTIVE WHY FLYEASE HIGHLIGHT SECTION ======= -->
+  <section class="why-flyease-section py-5" id="about">
+    <div class="max-w-1280 mx-auto px-3">
+      <div class="section-header text-center mb-5 reveal">
+        <span class="section-pill">Engineering Excellence</span>
+        <h2 class="mt-2 text-gradient font-display">Why FlyEase?</h2>
+        <p class="muted max-w-700 mx-auto">Click any core capability below to interact with its live demonstration, technical metrics, and direct execution.</p>
+      </div>
+
+      <div class="why-flyease-interactive-container p-4 reveal">
+        <div class="why-interactive-grid">
+          
+          <!-- Left: Tab Selectors -->
+          <div class="why-tabs-column" id="why-tabs-container">
+            <!-- Dynamically populated / interactive -->
+          </div>
+
+          <!-- Right: Interactive Display Panel -->
+          <div class="why-display-column" id="why-display-panel">
+            <!-- Injected via JavaScript based on selected feature -->
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= DYNAMIC PRICING VISUALIZATION ======= -->
+  <div class="pricing-vis-section text-center max-w-1280">
+    <div class="section-header mb-4 reveal">
+      <span class="section-pill">Fare Intelligence</span>
+      <h2 class="mt-2">Prices that think ahead.</h2>
+      <p class="muted">Our algorithms adjust fares in real time. Watch how it works.</p>
+    </div>
+    <div class="pricing-chart-container reveal" id="pricing-chart">
+      <div class="chart-bar" style="height:30%;"><span>&#8377;8,500<br><small class="text-muted">60 days out</small></span></div>
+      <div class="chart-bar" style="height:45%;"><span>&#8377;9,100<br><small class="text-muted">30 days out</small></span></div>
+      <div class="chart-bar" style="height:65%;"><span>&#8377;9,800<br><small class="text-muted">Demand rises</small></span></div>
+      <div class="chart-bar bg-danger" style="height:90%;"><span>&#8377;10,600<br><small class="text-muted">Last minute</small></span></div>
+    </div>
+    <p class="small muted mt-3 reveal">Fare changes are computed using: <strong>Base Fare + Dynamic Multiplier (Load Factor) + Tax</strong></p>
+  </div>
+
+  <!-- ======= HOW IT WORKS ======= -->
+  <div class="timeline-section">
+    <div class="max-w-1280">
+      <div class="section-header text-center mb-5 reveal">
+        <span class="section-pill">The Process</span>
+        <h2 class="mt-2">Your Journey, Simplified</h2>
+      </div>
+      <div class="timeline-new">
+        <div class="timeline-item-new reveal">
+          <div class="timeline-icon-new">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+          <div class="timeline-content-new glass">
+            <div class="step-number">01</div>
+            <h4>Search</h4>
+            <p class="muted mt-1">Enter your origin, destination, dates, and travel class. Get live results powered by the dynamic pricing engine.</p>
+          </div>
+        </div>
+        <div class="timeline-arrow"><i class="fa-solid fa-arrow-right text-primary"></i></div>
+        <div class="timeline-item-new reveal" style="transition-delay:0.15s;">
+          <div class="timeline-icon-new">
+            <i class="fa-solid fa-plane"></i>
+          </div>
+          <div class="timeline-content-new glass">
+            <div class="step-number">02</div>
+            <h4>Select Flight</h4>
+            <p class="muted mt-1">Choose your preferred flight from real-time results. For round trips, pick both departure and return flights.</p>
+          </div>
+        </div>
+        <div class="timeline-arrow"><i class="fa-solid fa-arrow-right text-primary"></i></div>
+        <div class="timeline-item-new reveal" style="transition-delay:0.3s;">
+          <div class="timeline-icon-new">
+            <i class="fa-solid fa-couch"></i>
+          </div>
+          <div class="timeline-content-new glass">
+            <div class="step-number">03</div>
+            <h4>Pick Seats</h4>
+            <p class="muted mt-1">Use the 3D cabin visualizer to pick window, aisle, premium, or extra legroom seats. Fees calculated instantly.</p>
+          </div>
+        </div>
+        <div class="timeline-arrow"><i class="fa-solid fa-arrow-right text-primary"></i></div>
+        <div class="timeline-item-new reveal" style="transition-delay:0.45s;">
+          <div class="timeline-icon-new">
+            <i class="fa-solid fa-credit-card"></i>
+          </div>
+          <div class="timeline-content-new glass">
+            <div class="step-number">04</div>
+            <h4>Pay & Fly</h4>
+            <p class="muted mt-1">Complete the mock payment, receive your PNR instantly, and download your printable e-ticket.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= STATISTICS ======= -->
+  <div class="stats-belt">
+    <div class="max-w-1280">
+      <div class="stats-grid-new">
+        <div class="stat-item-new reveal">
+          <div class="stat-icon"><i class="fa-solid fa-plane-departure"></i></div>
+          <div class="stat-number" data-target="10000">0</div>
+          <div class="stat-suffix">+</div>
+          <p class="muted">Simulated Flights</p>
+        </div>
+        <div class="stat-item-new reveal" style="transition-delay:0.1s;">
+          <div class="stat-icon"><i class="fa-solid fa-earth-asia"></i></div>
+          <div class="stat-number" data-target="50">0</div>
+          <div class="stat-suffix">+</div>
+          <p class="muted">Destinations</p>
+        </div>
+        <div class="stat-item-new reveal" style="transition-delay:0.2s;">
+          <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+          <div class="stat-number" data-target="99">0</div>
+          <div class="stat-suffix">.9%</div>
+          <p class="muted">On-Time Record</p>
+        </div>
+        <div class="stat-item-new reveal" style="transition-delay:0.3s;">
+          <div class="stat-icon"><i class="fa-solid fa-headset"></i></div>
+          <div class="stat-number" data-target="24">0</div>
+          <div class="stat-suffix">/7</div>
+          <p class="muted">Travel Support</p>
+        </div>
+        <div class="stat-item-new reveal" style="transition-delay:0.4s;">
+          <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-number" data-target="250">0</div>
+          <div class="stat-suffix">K+</div>
+          <p class="muted">Happy Travelers</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= TESTIMONIALS ======= -->
+  <div class="testimonials-section" id="reviews">
+    <div class="max-w-1280">
+      <div class="section-header text-center mb-5 reveal">
+        <span class="section-pill">Reviews</span>
+        <h2 class="mt-2">What Our Flyers Say</h2>
+        <p class="muted">Real experiences from our simulated travelers.</p>
+      </div>
+      <div class="test-grid">
+        <div class="testimonial-card-new glass reveal">
+          <div class="testimonial-quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+          <div class="text-warning mb-2">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p>"FlyEase made finding the right flight incredibly simple. The dynamic pricing was completely transparent — I could see exactly why fares changed."</p>
+          <div class="flex align-center mt-3 gap-3">
+            <div class="user-avatar test-avatar">A</div>
+            <div>
+              <strong>Aryan M.</strong>
+              <div class="small muted">BOM &#9992;&#65039; LHR</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card-new glass reveal" style="transition-delay:0.1s;">
+          <div class="testimonial-quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+          <div class="text-warning mb-2">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+          <p>"I loved the visual seat selector! It was so easy to pick a window seat. The 3D cabin view is unlike anything I've seen in a booking platform."</p>
+          <div class="flex align-center mt-3 gap-3">
+            <div class="user-avatar test-avatar" style="background:var(--accent);">S</div>
+            <div>
+              <strong>Sarah K.</strong>
+              <div class="small muted">JFK &#9992;&#65039; DXB</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card-new glass reveal" style="transition-delay:0.2s;">
+          <div class="testimonial-quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+          <div class="text-warning mb-2">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p>"The round-trip booking was seamless. Picked both flights, selected seats, and got my PNR in under 2 minutes. Absolutely flawless UI!"</p>
+          <div class="flex align-center mt-3 gap-3">
+            <div class="user-avatar test-avatar" style="background:var(--success);">R</div>
+            <div>
+              <strong>Rohan D.</strong>
+              <div class="small muted">DEL &#9992;&#65039; SIN (Round-trip)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= FAQ ======= -->
+  <div class="faq-section max-w-1280" id="faq">
+    <div class="section-header text-center mb-5 reveal">
+      <span class="section-pill">FAQ</span>
+      <h2 class="mt-2">Frequently Asked Questions</h2>
+    </div>
+    <div class="faq-grid">
+      <details class="faq-item glass reveal">
+        <summary>Is this a real flight booking platform?</summary>
+        <p class="muted mt-2">FlyEase is a <strong>flight booking simulator</strong> built with Django. No real money or tickets are involved. All payments are mocked using a simulated payment gateway.</p>
+      </details>
+      <details class="faq-item glass reveal" style="transition-delay:0.1s;">
+        <summary>How does dynamic pricing work?</summary>
+        <p class="muted mt-2">Our algorithm calculates fares based on a base price, seat availability (load factor), days until departure, and booking time. The fewer seats remain, the higher the fare — just like real airlines.</p>
+      </details>
+      <details class="faq-item glass reveal" style="transition-delay:0.2s;">
+        <summary>Can I book a round-trip?</summary>
+        <p class="muted mt-2">Yes! Select "Round-trip" on the search form, pick your return date, and the system will let you choose departure and return flights separately — each with their own seat selection.</p>
+      </details>
+      <details class="faq-item glass reveal" style="transition-delay:0.3s;">
+        <summary>What are the coupon codes for testing?</summary>
+        <p class="muted mt-2">You can add coupons via the Django admin panel. Create a <code>Coupon</code> object with a code, discount percentage or flat amount, and expiry date.</p>
+      </details>
+    </div>
+  </div>
+
+  <!-- ======= PRE-FOOTER CTA ======= -->
+  <div class="cta-section-new">
+    <div class="cta-bg-glow"></div>
+    <div class="cta-content max-w-1280 text-center">
+      <div class="cta-plane-icon reveal"><i class="fa-solid fa-paper-plane"></i></div>
+      <h1 class="reveal mb-3">Ready for your next adventure?</h1>
+      <p class="reveal muted mb-4" style="font-size:1.2rem;">Find your flight, pick your seat, and experience the future of flight booking.</p>
+      <div class="reveal flex justify-center gap-3 flex-wrap">
+        <button class="btn btn-primary btn-large" onclick="window.scrollTo({top:0,behavior:'smooth'});document.getElementById('origin').focus();">
+          Search Flights Now <i class="fa-solid fa-arrow-up ms-2"></i>
+        </button>
+        <button class="btn btn-outline btn-large" onclick="window.location.href='/dashboard/'">
+          View My Bookings <i class="fa-solid fa-ticket ms-2"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- STEP 2: FLIGHT RESULTS -->
+<section id="step-results" class="step-section hidden">
+  <div class="container mt-4">
+    <button type="button" class="btn btn-outline mb-4" onclick="app.goToStep('search')">
+      <i class="fa-solid fa-arrow-left"></i> Modify Search
+    </button>
+    
+    <div class="results-header d-flex justify-between align-center mb-4 flex-wrap gap-2">
+      <div>
+        <h2 id="results-route-title">BOM to DEL</h2>
+        <p class="muted" id="results-meta-subtitle">15 Aug 2026 • 2 Passengers • Economy</p>
+      </div>
+      <div class="flex align-center gap-2 flex-wrap">
+        <button type="button" class="btn btn-outline btn-sm" onclick="app.openDestinationWeatherModal()" title="View destination weather & forecast">
+          <i class="fa-solid fa-cloud-sun text-warning me-1"></i> Destination Weather
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="app.openTravelRequirementsModal()" title="Check official visa & document rules">
+          <i class="fa-solid fa-passport text-cyan me-1"></i> Visa & Docs
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="app.openPriceAlertModal()" title="Track price and get notified when fare drops">
+          <i class="fa-solid fa-bell text-emerald me-1"></i> Track Price
+        </button>
+        <div class="sort-widget">
+          <select id="sort-results" class="form-control" onchange="app.sortFlightOffers(this.value)">
+            <option value="cheapest">Sort: Lowest Fare</option>
+            <option value="best_value">Sort: Best Value 🏆</option>
+            <option value="fastest">Sort: Fastest Duration</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flight Comparison Drawer / Floating Action Bar -->
+    <div id="flight-compare-tray" class="flight-compare-tray glass hidden">
+      <div class="flex justify-between align-center p-3">
+        <div class="flex align-center gap-3">
+          <span class="badge badge-primary font-mono"><i class="fa-solid fa-code-compare me-1"></i> <span id="compare-count">0</span> / 4 Flights</span>
+          <div class="compare-thumbnails flex gap-2" id="compare-thumbnails">
+            <!-- Selected flight chips -->
+          </div>
+        </div>
+        <div class="flex align-center gap-2">
+          <button type="button" class="btn btn-primary btn-sm glow-btn" id="btn-open-compare" onclick="app.openFlightComparison()">
+            Compare Now <i class="fa-solid fa-arrow-right ms-1"></i>
+          </button>
+          <button type="button" class="btn btn-outline btn-sm text-danger" onclick="app.clearComparison()">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Modal Overlay -->
+    <div id="flight-compare-modal" class="global-modal-overlay hidden" onclick="if(event.target === this) app.closeFlightComparison()">
+      <div class="global-modal-card glass p-4" style="max-width: 1040px; width: 95%;">
+        <div class="modal-header-row flex justify-between align-center mb-3">
+          <div class="flex align-center gap-2">
+            <div class="modal-icon-circle"><i class="fa-solid fa-code-compare text-primary"></i></div>
+            <div>
+              <h3 class="m-0 text-gradient">Smart Flight Comparison</h3>
+              <p class="muted small m-0">Side-by-side automated multi-factor analysis & recommendations</p>
+            </div>
+          </div>
+          <button type="button" class="btn-close-modal" onclick="app.closeFlightComparison()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <hr class="glass-divider mb-3">
+        
+        <div id="compare-matrix-container" class="compare-matrix-scroll overflow-x-auto">
+          <!-- Dynamically generated comparison table matrix -->
+        </div>
+      </div>
+    </div>
+
+    <div id="flight-results-container" class="flight-list">
+      <!-- Flight cards will be injected here -->
+    </div>
+  </div>
+</section>
+
+<!-- STEP 3: FLIGHT DETAILS & SEAT MAP -->
+<section id="step-seats" class="step-section hidden">
+  
+  <!-- Booking Progress Bar -->
+  <div class="booking-progress max-w-1280">
+    <div class="progress-step completed"><i class="fa-solid fa-check"></i> Flight</div>
+    <div class="progress-line completed"></div>
+    <div class="progress-step active"><div class="glow-ring"></div> Seat</div>
+    <div class="progress-line"></div>
+    <div class="progress-step muted">Passenger</div>
+    <div class="progress-line"></div>
+    <div class="progress-step muted">Payment</div>
+    <div class="progress-line"></div>
+    <div class="progress-step muted">Confirmation</div>
+  </div>
+
+  <div class="container mt-4 seat-selection-layout max-w-1280">
+    
+    <!-- Left Column: Aircraft Seat Map -->
+    <div class="seat-map-col">
+      <button type="button" class="btn btn-outline mb-4 btn-back-flights" onclick="app.goToStep('results')">
+        <i class="fa-solid fa-arrow-left"></i> Back to Flights
+      </button>
+
+      <div class="seat-map-header mb-3 flex justify-between align-center flex-wrap gap-2">
+        <div>
+          <h3 class="m-0">Select Your Seats</h3>
+          <p class="muted mb-0 small">Passengers: <span id="seats-selected-count">0</span> / <span id="seats-total-needed">1</span></p>
+        </div>
+        <div class="flex gap-2 align-center">
+          <!-- 3D / 2D View Switcher -->
+          <div class="view-switch-btn-group flex gap-1 glass-inner p-1" style="border-radius: 8px;">
+            <button type="button" id="seat-view-3d-btn" class="btn btn-xs active" onclick="app.setSeatViewMode('3d')"><i class="fa-solid fa-cube me-1"></i> 3D Cabin</button>
+            <button type="button" id="seat-view-2d-btn" class="btn btn-xs" onclick="app.setSeatViewMode('2d')"><i class="fa-solid fa-table-cells me-1"></i> 2D Map</button>
+          </div>
+
+          <button type="button" id="undo-seat-btn" class="btn btn-outline btn-sm" onclick="app.undoLastSeat()" title="Undo last seat choice">
+            <i class="fa-solid fa-rotate-left me-1"></i> Undo
+          </button>
+          <button type="button" id="reset-seats-btn" class="btn btn-outline btn-sm text-danger" onclick="app.resetSeatSelection()" title="Clear all selected seats">
+            <i class="fa-solid fa-trash-can me-1"></i> Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters & 3D Camera Controls -->
+      <div class="seat-controls-bar mb-3 flex justify-between align-center flex-wrap gap-2">
+        <div class="seat-filters flex gap-2 flex-wrap">
+          <button class="btn btn-outline btn-sm filter-btn active" data-filter="all">All Seats</button>
+          <button class="btn btn-outline btn-sm filter-btn" data-filter="window">Window</button>
+          <button class="btn btn-outline btn-sm filter-btn" data-filter="aisle">Aisle</button>
+          <button class="btn btn-outline btn-sm filter-btn" data-filter="legroom">Extra Legroom</button>
+          <button class="btn btn-outline btn-sm filter-btn" data-filter="premium">Premium</button>
+        </div>
+        
+        <!-- 3D Orbit & Zoom Toolbar -->
+        <div class="cabin-3d-toolbar flex gap-1 align-center" id="cabin-3d-toolbar">
+          <button type="button" class="btn btn-outline btn-xs" onclick="app.rotateCabin(-15)" title="Rotate Left"><i class="fa-solid fa-rotate-left"></i></button>
+          <button type="button" class="btn btn-outline btn-xs" onclick="app.rotateCabin(15)" title="Rotate Right"><i class="fa-solid fa-rotate-right"></i></button>
+          <button type="button" class="btn btn-outline btn-xs" onclick="app.zoomCabin(0.1)" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+          <button type="button" class="btn btn-outline btn-xs" onclick="app.zoomCabin(-0.1)" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+          <button type="button" class="btn btn-outline btn-xs" onclick="app.resetCabinCamera()" title="Reset View"><i class="fa-solid fa-arrows-rotate"></i></button>
+        </div>
+      </div>
+
+      <!-- 3D Aircraft Container -->
+      <div class="aircraft-3d-container" id="aircraft-3d-container">
+        <div class="aircraft-fuselage" id="aircraft-fuselage">
+          <div class="aircraft-nose">
+            <div class="cockpit-window"></div>
+          </div>
+          
+          <div class="aircraft-cabin">
+            <div id="seat-grid" class="seat-grid-realistic">
+              <div class="loading-spinner"><i class="fa-solid fa-plane text-primary me-2"></i> Loading aircraft...</div>
+            </div>
+          </div>
+          
+          <div class="aircraft-wings">
+            <div class="wing wing-left"></div>
+            <div class="wing wing-right"></div>
+          </div>
+          
+          <div class="aircraft-tail"></div>
+        </div>
+      </div>
+      
+      <!-- Legend -->
+      <div class="seat-legend-modern glass mt-4 flex justify-center gap-4 flex-wrap">
+        <div class="legend-item"><div class="seat-icon available"></div><span>Available</span></div>
+        <div class="legend-item"><div class="seat-icon selected"></div><span>Selected</span></div>
+        <div class="legend-item"><div class="seat-icon occupied"></div><span>Occupied</span></div>
+        <div class="legend-item"><div class="seat-icon premium"></div><span>Premium</span></div>
+        <div class="legend-item"><div class="seat-icon legroom"></div><span>Extra Legroom</span></div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Booking Summary & Insights -->
+    <div class="booking-summary-col">
+      
+      <!-- Premium Flight Card -->
+      <div class="premium-flight-card glass mb-4">
+        <div class="flight-route-anim flex justify-between align-center">
+          <div class="airport text-left">
+            <h2 id="seat-map-orig" class="text-gradient">BOM</h2>
+            <p id="seat-map-orig-city" class="muted small mb-0">Mumbai</p>
+          </div>
+          <div class="route-progress-container text-center flex-1 mx-3" style="position: relative;">
+            <div class="route-progress-line"></div>
+            <i class="fa-solid fa-plane plane-flying text-primary absolute" style="left: 50%; top: -10px; transform: translateX(-50%);"></i>
+            <div id="seat-map-duration" class="small muted mt-2">2h 05m</div>
+          </div>
+          <div class="airport text-right">
+            <h2 id="seat-map-dest" class="text-gradient">DEL</h2>
+            <p id="seat-map-dest-city" class="muted small mb-0">Delhi</p>
+          </div>
+        </div>
+        
+        <hr class="glass-divider my-3">
+        
+        <div class="flight-details-grid flex justify-between text-center">
+          <div>
+            <p class="muted small mb-0">Departure</p>
+            <strong id="seat-map-dep-time">--:--</strong>
+          </div>
+          <div>
+            <p class="muted small mb-0">Flight</p>
+            <strong id="seat-map-flight-num">FE-XXXX</strong>
+          </div>
+          <div>
+            <p class="muted small mb-0">Arrival</p>
+            <strong id="seat-map-arr-time">--:--</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Smart Fare Insights -->
+      <div class="fare-insights-card glass mb-4 p-4">
+        <h4><i class="fa-solid fa-bolt text-warning"></i> Smart Fare Insights</h4>
+        <hr class="glass-divider my-2">
+        
+        <div class="insight-row mb-3 flex justify-between align-center">
+          <div>
+            <div class="text-danger font-weight-bold"><i class="fa-solid fa-fire me-1"></i> High Demand</div>
+            <div class="small muted" id="fare-insight-reason">Prices may increase</div>
+          </div>
+          <div class="text-right">
+            <div class="small muted">Trend</div>
+            <i class="fa-solid fa-arrow-trend-up text-danger"></i>
+          </div>
+        </div>
+        
+        <details class="price-explanation-details">
+          <summary class="text-secondary" style="cursor: pointer;">Why is my fare changing?</summary>
+          <div class="details-content small muted mt-2 p-2" style="background: rgba(0,0,0,0.2); border-radius: 8px;">
+            Prices adjust dynamically based on seat availability, demand, departure date, and booking time. As flights get fuller, fares typically increase.
+          </div>
+        </details>
+      </div>
+
+      <!-- Sticky Booking Summary -->
+      <div class="booking-summary-sticky glass p-4 sticky" style="top: 100px;">
+        <h4>Your Selection</h4>
+        <hr class="glass-divider my-3">
+        
+        <div class="summary-line flex justify-between">
+          <span class="muted">Passenger(s)</span>
+          <strong id="sidebar-pax-count">1 Adult</strong>
+        </div>
+        <div class="summary-line mt-2 flex justify-between">
+          <span class="muted">Seat(s)</span>
+          <strong id="sidebar-seats-selected" class="text-secondary">None</strong>
+        </div>
+        
+        <hr class="glass-divider my-3">
+        
+        <div class="summary-line flex justify-between">
+          <span class="muted">Base Fare</span>
+          <strong id="sidebar-base-fare">₹0</strong>
+        </div>
+        <div class="summary-line mt-1 flex justify-between text-warning">
+          <span>Dynamic Fare</span>
+          <strong id="sidebar-dynamic-fare">₹0</strong>
+        </div>
+        <div class="summary-line mt-1 flex justify-between text-primary">
+          <span>Seat Upgrades</span>
+          <strong id="sidebar-seat-fees">₹0</strong>
+        </div>
+        <div class="summary-line mt-1 flex justify-between">
+          <span class="muted">Taxes & Fees</span>
+          <strong id="sidebar-taxes">₹0</strong>
+        </div>
+        
+        <hr class="glass-divider my-3">
+        
+        <div class="summary-line total-line flex justify-between align-center">
+          <span class="font-large">Total</span>
+          <h2 id="sidebar-total-fare" class="text-gradient m-0">₹0</h2>
+        </div>
+        
+        <button type="button" id="continue-to-pax" class="btn btn-primary btn-large w-100 mt-4" disabled>
+          Select a seat to continue
+        </button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- STEP 4: PASSENGER DETAILS -->
+<section id="step-passengers" class="step-section hidden">
+  
+  <!-- Booking Progress Bar -->
+  <div class="booking-progress max-w-1280">
+    <div class="progress-step completed"><i class="fa-solid fa-circle-check text-success check-animated"></i> Flight</div>
+    <div class="progress-line completed"></div>
+    <div class="progress-step completed"><i class="fa-solid fa-circle-check text-success check-animated"></i> Seat</div>
+    <div class="progress-line completed"></div>
+    <div class="progress-step active"><div class="glow-ring"></div> Passenger</div>
+    <div class="progress-line"></div>
+    <div class="progress-step muted">Payment</div>
+    <div class="progress-line"></div>
+    <div class="progress-step muted">Confirmation</div>
+  </div>
+
+  <div class="container mt-4 max-w-1280">
+    
+    <!-- Top Action Row -->
+    <div class="mb-3 flex justify-between align-center">
+      <button type="button" class="btn btn-outline btn-back-seats" onclick="app.goToStep('seats')">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Seat Selection
+      </button>
+      <div class="text-muted small"><i class="fa-solid fa-shield-halved text-success me-1"></i> 256-bit SSL Encrypted</div>
+    </div>
+
+    <!-- Compact Premium Flight Summary Card -->
+    <div class="flight-summary-banner glass p-4 mb-4 flex justify-between align-center flex-wrap gap-3">
+      <div class="flex align-center gap-3">
+        <div class="summary-plane-icon flex align-center justify-center">
+          <i class="fa-solid fa-plane-up text-primary floating-plane-sm"></i>
+        </div>
+        <div>
+          <div class="flex align-center gap-2 flex-wrap">
+            <h3 id="pax-sum-route" class="m-0 text-gradient">Mumbai (BOM) → Delhi (DEL)</h3>
+            <span id="pax-sum-flight-num" class="badge badge-pill">FE-1024</span>
+          </div>
+          <div class="muted small mt-2 flex align-center gap-3 flex-wrap">
+            <span><i class="fa-regular fa-calendar text-primary me-1"></i> Dep: <strong id="pax-sum-dep-date">--</strong></span>
+            <span><i class="fa-regular fa-clock text-primary me-1"></i> Arr: <strong id="pax-sum-arr-date">--</strong></span>
+            <span><i class="fa-solid fa-stopwatch text-warning me-1"></i> Duration: <strong id="pax-sum-duration">2h 05m</strong></span>
+            <span><i class="fa-solid fa-chair text-secondary me-1"></i> Seat(s): <strong id="pax-sum-seats" class="text-secondary">--</strong></span>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm btn-change-seat" onclick="app.goToStep('seats')">
+        <i class="fa-solid fa-pen-to-square me-1"></i> Change Seat
+      </button>
+    </div>
+
+    <!-- Main Two-Column Layout -->
+    <div class="pax-layout-grid">
+      
+      <!-- LEFT COLUMN: Passenger & Contact Info, Docs, Services -->
+      <div class="pax-main-col">
+        
+        <!-- SECTION TITLE -->
+        <div class="pax-header-block mb-4">
+          <h2>Passenger Details</h2>
+          <p class="muted mb-0">Enter the details exactly as they appear on your government-issued travel document.</p>
+        </div>
+
+        <!-- DYNAMIC PASSENGER CARDS CONTAINER -->
+        <form id="passenger-forms-container" novalidate>
+          <!-- Passenger form cards dynamically generated by script.js -->
+        </form>
+
+        <!-- CONTACT INFORMATION CARD -->
+        <div class="contact-info-card glass p-4 mb-4">
+          <div class="card-title-row flex align-center gap-2 mb-2">
+            <i class="fa-solid fa-envelope-open-text text-primary font-large"></i>
+            <h4 class="m-0">Contact Information</h4>
+          </div>
+          <p class="muted small mb-3">We'll send your booking confirmation and ticket to this contact.</p>
+          
+          <div class="form-row-2col">
+            <div class="form-floating-custom">
+              <input type="email" id="contact-email" class="form-control-custom" placeholder=" " required autocomplete="email">
+              <label for="contact-email">Email Address *</label>
+              <div class="input-glow-line"></div>
+              <div class="inline-error-msg hidden" id="err-contact-email">Please enter a valid email address.</div>
+            </div>
+
+            <div class="form-floating-custom">
+              <input type="tel" id="contact-phone" class="form-control-custom" placeholder=" " required autocomplete="tel">
+              <label for="contact-phone">Phone Number *</label>
+              <div class="input-glow-line"></div>
+              <div class="inline-error-msg hidden" id="err-contact-phone">Please enter a valid phone number.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPTIONAL TRAVEL DOCUMENTS CARD -->
+        <div class="travel-docs-card glass p-4 mb-4" id="travel-docs-section">
+          <div class="card-title-row flex justify-between align-center mb-2">
+            <div class="flex align-center gap-2">
+              <i class="fa-solid fa-passport text-secondary font-large"></i>
+              <h4 class="m-0">Travel Documents</h4>
+            </div>
+            <span class="badge badge-outline" id="docs-requirement-badge">Domestic Route</span>
+          </div>
+          <p class="muted small mb-3" id="docs-subtitle-text">For domestic flights, government ID details are optional.</p>
+
+          <div class="form-row-3col" id="passport-fields-row">
+            <div class="form-floating-custom">
+              <input type="text" id="doc-passport-no" class="form-control-custom" placeholder=" ">
+              <label for="doc-passport-no">Passport Number</label>
+              <div class="input-glow-line"></div>
+            </div>
+
+            <div class="form-floating-custom">
+              <input type="date" id="doc-passport-expiry" class="form-control-custom" placeholder=" ">
+              <label for="doc-passport-expiry">Passport Expiry</label>
+              <div class="input-glow-line"></div>
+            </div>
+
+            <div class="form-floating-custom">
+              <input type="text" id="doc-govt-id" class="form-control-custom" placeholder=" ">
+              <label for="doc-govt-id">Government ID (Aadhaar / National ID)</label>
+              <div class="input-glow-line"></div>
+            </div>
+          </div>
+
+          <details class="why-need-docs mt-3">
+            <summary class="text-secondary small cursor-pointer flex align-center gap-1">
+              <i class="fa-solid fa-circle-question"></i> Why do we need this?
+            </summary>
+            <div class="details-box small muted mt-2 p-3 glass-inner rounded">
+              Airline security guidelines require identity verification prior to boarding. Providing your document details upfront speeds up airport check-in and automated immigration clearance.
+            </div>
+          </details>
+        </div>
+
+        <!-- ADDITIONAL SERVICES CARD -->
+        <div class="additional-services-card glass p-4 mb-4">
+          <div class="card-title-row flex align-center gap-2 mb-2">
+            <i class="fa-solid fa-sliders text-warning font-large"></i>
+            <h4 class="m-0">Enhance Your Journey</h4>
+          </div>
+          <p class="muted small mb-3">Select optional add-ons to customize your flight experience.</p>
+
+          <div class="services-grid">
+            <label class="service-card-item glass-inner" data-service="baggage" data-price="1200">
+              <input type="checkbox" class="service-checkbox" id="srv-baggage" onchange="app.toggleService('baggage', 1200)">
+              <div class="service-checkmark"><i class="fa-solid fa-check"></i></div>
+              <div class="service-icon"><i class="fa-solid fa-suitcase-rolling text-primary"></i></div>
+              <div class="service-info">
+                <strong>Extra Baggage (+15 kg)</strong>
+                <span class="muted small">Avoid airport over-weight fees</span>
+              </div>
+              <div class="service-price text-gradient">+₹1,200</div>
+            </label>
+
+            <label class="service-card-item glass-inner" data-service="priority" data-price="500">
+              <input type="checkbox" class="service-checkbox" id="srv-priority" onchange="app.toggleService('priority', 500)">
+              <div class="service-checkmark"><i class="fa-solid fa-check"></i></div>
+              <div class="service-icon"><i class="fa-solid fa-bolt text-warning"></i></div>
+              <div class="service-info">
+                <strong>Priority Boarding</strong>
+                <span class="muted small">Skip the queue & board first</span>
+              </div>
+              <div class="service-price text-gradient">+₹500</div>
+            </label>
+
+            <label class="service-card-item glass-inner" data-service="meal" data-price="350">
+              <input type="checkbox" class="service-checkbox" id="srv-meal" onchange="app.toggleService('meal', 350)">
+              <div class="service-checkmark"><i class="fa-solid fa-check"></i></div>
+              <div class="service-icon"><i class="fa-solid fa-utensils text-success"></i></div>
+              <div class="service-info">
+                <strong>Gourmet In-Flight Meal</strong>
+                <span class="muted small">Chef's special hot meal & drink</span>
+              </div>
+              <div class="service-price text-gradient">+₹350</div>
+            </label>
+
+            <label class="service-card-item glass-inner" data-service="insurance" data-price="700">
+              <input type="checkbox" class="service-checkbox" id="srv-insurance" onchange="app.toggleService('insurance', 700)">
+              <div class="service-checkmark"><i class="fa-solid fa-check"></i></div>
+              <div class="service-icon"><i class="fa-solid fa-shield-heart text-secondary"></i></div>
+              <div class="service-info">
+                <strong>Full Travel Insurance</strong>
+                <span class="muted small">Medical coverage & flight cancellation</span>
+              </div>
+              <div class="service-price text-gradient">+₹700</div>
+            </label>
+          </div>
+        </div>
+
+        <!-- TERMS AND CONDITIONS CONSENT -->
+        <div class="terms-consent-card glass p-4 mb-4">
+          <label class="consent-checkbox-label flex align-center gap-3 cursor-pointer">
+            <input type="checkbox" id="terms-consent-check" class="custom-checkbox-input" onchange="app.toggleTermsConsent(this.checked)">
+            <span class="checkbox-box flex align-center justify-center"><i class="fa-solid fa-check text-white"></i></span>
+            <span class="small muted">
+              I agree to the <a href="#terms-modal" onclick="event.preventDefault(); app.showTermsModal('terms');" class="text-primary underline">FlyEase Terms & Conditions</a>, <a href="#privacy-modal" onclick="event.preventDefault(); app.showTermsModal('privacy');" class="text-primary underline">Privacy Policy</a>, and <a href="#refund-modal" onclick="event.preventDefault(); app.showTermsModal('refund');" class="text-primary underline">Cancellation Policy</a>.
+            </span>
+          </label>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: STICKY BOOKING SUMMARY & FARE INSIGHT -->
+      <div class="pax-sidebar-col">
+        
+        <!-- STICKY SUMMARY CARD ("Your Trip") -->
+        <div class="sticky-trip-card glass p-4 sticky" style="top: 90px;">
+          <div class="flex justify-between align-center mb-2">
+            <h4 class="m-0">Your Trip</h4>
+            <span class="badge badge-pill badge-primary"><i class="fa-solid fa-shield text-success me-1"></i> Best Price</span>
+          </div>
+          <hr class="glass-divider my-3">
+          
+          <div class="trip-summary-details">
+            <div class="summary-row flex justify-between">
+              <span class="muted">Flight</span>
+              <strong id="pax-side-route">BOM → DEL</strong>
+            </div>
+            <div class="summary-row mt-2 flex justify-between">
+              <span class="muted">Date</span>
+              <strong id="pax-side-date">13 Aug 2026</strong>
+            </div>
+            <div class="summary-row mt-2 flex justify-between">
+              <span class="muted">Passengers</span>
+              <strong id="pax-side-count">1 Adult</strong>
+            </div>
+            <div class="summary-row mt-2 flex justify-between">
+              <span class="muted">Selected Seat(s)</span>
+              <strong id="pax-side-seats" class="text-secondary">12A</strong>
+            </div>
+          </div>
+
+          <hr class="glass-divider my-3">
+
+          <!-- Price Breakdown -->
+          <div class="fare-breakdown-list">
+            <div class="summary-row flex justify-between">
+              <span class="muted">Base Fare</span>
+              <strong id="pax-side-base">₹0</strong>
+            </div>
+            <div class="summary-row mt-1 flex justify-between text-warning">
+              <span>Dynamic Fare Adjustment</span>
+              <strong id="pax-side-dynamic">₹0</strong>
+            </div>
+            <div class="summary-row mt-1 flex justify-between text-primary">
+              <span>Seat Selection Fee</span>
+              <strong id="pax-side-seatfees">₹0</strong>
+            </div>
+            <div class="summary-row mt-1 flex justify-between text-success">
+              <span>Additional Services</span>
+              <strong id="pax-side-services">₹0</strong>
+            </div>
+            <div class="summary-row mt-1 flex justify-between">
+              <span class="muted">Taxes & Fees (18%)</span>
+              <strong id="pax-side-taxes">₹0</strong>
+            </div>
+            <div class="summary-row mt-1 flex justify-between text-accent hidden" id="pax-side-discount-row">
+              <span>Promo Discount</span>
+              <strong id="pax-side-discount">-₹0</strong>
+            </div>
+          </div>
+
+          <!-- Coupon Code Section -->
+          <div class="coupon-box mt-3">
+            <div class="flex gap-2">
+              <input type="text" id="coupon-code" class="form-control form-control-sm text-uppercase" placeholder="PROMO CODE">
+              <button type="button" id="apply-coupon-btn" class="btn btn-outline btn-sm">Apply</button>
+            </div>
+            <div id="coupon-msg" class="text-success small mt-1 hidden"></div>
+          </div>
+
+          <!-- SMART FARE INSIGHT CARD -->
+          <div class="smart-insight-card glass p-3 mt-3 mb-3">
+            <div class="flex justify-between align-center mb-1">
+              <div class="flex align-center gap-2">
+                <i class="fa-solid fa-bolt text-warning"></i>
+                <strong class="small m-0">Smart Fare Insight</strong>
+              </div>
+              <span class="badge badge-danger-soft pulse-slow" style="font-size:0.72rem;padding:0.2rem 0.5rem;"><i class="fa-solid fa-fire me-1"></i> High Demand</span>
+            </div>
+            <p class="muted small mb-2" style="font-size:0.8rem;line-height:1.4;">Prices may rise as departure nears due to high demand.</p>
+            <div class="insight-trend-bar flex align-center justify-between p-2 glass-inner rounded">
+              <div class="small muted" style="font-size:0.75rem;"><i class="fa-solid fa-chart-line text-danger me-1"></i> Price Trend</div>
+              <div class="small text-danger font-weight-bold" style="font-size:0.75rem;">Rising +4.2% <i class="fa-solid fa-arrow-trend-up ms-1"></i></div>
+            </div>
+          </div>
+
+          <hr class="glass-divider my-3">
+
+          <!-- Total Amount -->
+          <div class="total-price-block flex justify-between align-center">
+            <div>
+              <div class="small muted">Total Price</div>
+              <div class="micro-text muted">Includes taxes & charges</div>
+            </div>
+            <h2 id="pax-side-total" class="text-gradient m-0 font-weight-bold">₹0</h2>
+          </div>
+
+          <!-- CONTINUE TO PAYMENT BUTTON -->
+          <button type="button" id="continue-to-payment" class="btn btn-primary btn-large w-100 mt-4 continue-pax-btn" disabled>
+            <span id="btn-pax-text">Continue to Payment <i class="fa-solid fa-arrow-right ms-2 btn-arrow-icon"></i></span>
+            <span id="btn-pax-loading" class="hidden"><i class="fa-solid fa-circle-notch fa-spin me-2"></i> Saving Passenger Details...</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- STEP 5: PAYMENT (PREMIUM UI — MULTIPLE METHODS) -->
+<section id="step-payment" class="step-section hidden">
+  <div class="container mt-4" style="min-height: auto;">
+
+    <!-- Booking Progress -->
+    <div class="booking-progress max-w-1280">
+      <div class="progress-step completed"><i class="fa-solid fa-circle-check text-success check-animated"></i> Flight</div>
+      <div class="progress-line completed"></div>
+      <div class="progress-step completed"><i class="fa-solid fa-circle-check text-success check-animated"></i> Seat</div>
+      <div class="progress-line completed"></div>
+      <div class="progress-step completed"><i class="fa-solid fa-circle-check text-success check-animated"></i> Passenger</div>
+      <div class="progress-line completed"></div>
+      <div class="progress-step active"><div class="glow-ring"></div> Payment</div>
+      <div class="progress-line"></div>
+      <div class="progress-step muted">Confirmation</div>
+    </div>
+
+    <div class="payment-layout-grid max-w-1280 mt-4">
+
+      <!-- LEFT: Payment Methods & Forms -->
+      <div class="payment-main-col">
+        <button type="button" class="btn btn-outline mb-3 btn-back-pax" onclick="app.goToStep('passengers')">
+          <i class="fa-solid fa-arrow-left me-1"></i> Back to Passenger Details
+        </button>
+
+        <div class="glass p-4 payment-methods-card">
+          <div class="card-title-row flex align-center gap-2 mb-3">
+            <i class="fa-solid fa-shield-halved text-success font-large"></i>
+            <div>
+              <h3 class="m-0">Secure Checkout</h3>
+              <p class="muted small mb-0">Your information is protected with 256-bit SSL encryption.</p>
+            </div>
+          </div>
+          <hr class="glass-divider mb-4">
+
+          <!-- Payment Method Tabs -->
+          <div class="payment-method-tabs" id="payment-method-tabs">
+            <button type="button" class="pay-method-tab active" data-method="CARD">
+              <i class="fa-solid fa-credit-card"></i>
+              <span>Credit / Debit Card</span>
+            </button>
+            <button type="button" class="pay-method-tab" data-method="UPI">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+              <span>UPI</span>
+            </button>
+            <button type="button" class="pay-method-tab" data-method="NET_BANKING">
+              <i class="fa-solid fa-building-columns"></i>
+              <span>Net Banking</span>
+            </button>
+            <button type="button" class="pay-method-tab" data-method="WALLET">
+              <i class="fa-solid fa-wallet"></i>
+              <span>Wallet</span>
+            </button>
+            <button type="button" class="pay-method-tab" data-method="COUNTER">
+              <i class="fa-solid fa-hand-holding-dollar"></i>
+              <span>Pay at Counter</span>
+            </button>
+          </div>
+
+          <!-- Payment Form Containers -->
+          <div class="payment-forms-container mt-4">
+
+            <!-- CARD FORM -->
+            <div class="payment-form-pane active" data-pane="CARD">
+              <div class="card-preview-glass mb-4">
+                <div class="card-chip"><i class="fa-solid fa-microchip"></i></div>
+                <div class="card-brand text-right"><i class="fa-brands fa-cc-visa" style="color:#1a1f71;"></i></div>
+                <div class="card-number-display" id="card-num-display">4242 4242 4242 4242</div>
+                <div class="flex justify-between mt-3">
+                  <div>
+                    <div class="muted tiny">CARD HOLDER</div>
+                    <div class="card-name-display">FLYEASE USER</div>
+                  </div>
+                  <div>
+                    <div class="muted tiny">EXPIRES</div>
+                    <div class="card-expiry-display" id="card-exp-display">12/28</div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="pay-field-label">Name on Card *</label>
+                <input type="text" id="pay-card-name" class="form-control form-control-lg" placeholder="John Doe" autocomplete="cc-name">
+                <div class="inline-error-msg hidden" id="err-card-name">Please enter the name as it appears on the card.</div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="pay-field-label">Card Number *</label>
+                <div class="position-relative">
+                  <input type="text" id="pay-card-number" class="form-control form-control-lg" maxlength="19" placeholder="4242 4242 4242 4242" autocomplete="cc-number" value="4242 4242 4242 4242">
+                  <div class="pay-card-icon">
+                    <i class="fa-brands fa-cc-visa"></i>
+                    <i class="fa-brands fa-cc-mastercard"></i>
+                  </div>
+                </div>
+                <div class="inline-error-msg hidden" id="err-card-number">Please enter a valid card number.</div>
+              </div>
+              <div class="form-row-3col">
+                <div class="form-group">
+                  <label class="pay-field-label">Expiry Date *</label>
+                  <input type="text" id="pay-card-expiry" class="form-control form-control-lg" maxlength="5" placeholder="MM/YY" value="12/28" autocomplete="cc-exp">
+                  <div class="inline-error-msg hidden" id="err-card-expiry">Format MM/YY</div>
+                </div>
+                <div class="form-group">
+                  <label class="pay-field-label">CVV *</label>
+                  <input type="password" id="pay-card-cvv" class="form-control form-control-lg" maxlength="4" placeholder="•••" autocomplete="cc-csc" value="123">
+                  <div class="inline-error-msg hidden" id="err-card-cvv">3-4 digits</div>
+                </div>
+                <div class="form-group">
+                  <label class="pay-field-label">Save Card</label>
+                  <select id="pay-card-save" class="form-control form-control-lg">
+                    <option value="no">No, one-time</option>
+                    <option value="yes">Save for next time</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- UPI FORM -->
+            <div class="payment-form-pane hidden" data-pane="UPI">
+              <div class="pay-method-intro glass-inner p-3 mb-4 rounded">
+                <i class="fa-solid fa-mobile-screen-button text-primary me-2"></i>
+                <span class="muted small">Enter your UPI ID. You will receive a collect request on your UPI app — approve it to complete payment.</span>
+              </div>
+              <div class="form-group mb-3">
+                <label class="pay-field-label">UPI ID / VPA *</label>
+                <div class="upi-field-wrap">
+                  <input type="text" id="pay-upi-id" class="form-control form-control-lg" placeholder="yourname@okicici" autocomplete="off" value="flyease@ybl">
+                  <button type="button" class="btn btn-outline btn-sm pay-verify-upi" onclick="app.verifyUpiId();">
+                    <i class="fa-solid fa-circle-check me-1"></i> Verify
+                  </button>
+                </div>
+                <div class="inline-error-msg hidden" id="err-upi-id">Please enter a valid UPI ID (e.g. name@bank).</div>
+                <div id="upi-status-msg" class="upi-status hidden"></div>
+              </div>
+              <div class="muted small mt-3 p-2 glass-inner rounded">
+                <i class="fa-solid fa-circle-info text-primary me-1"></i>
+                Supported UPI apps: PhonePe · Google Pay · Paytm · BHIM · Amazon Pay · WhatsApp Pay
+              </div>
+              <div class="upi-qr-section mt-4 p-3 glass-inner rounded text-center">
+                <p class="muted small mb-2">Or scan this QR with any UPI app</p>
+                <div class="upi-qr-placeholder flex align-center justify-center">
+                  <i class="fa-solid fa-qrcode" style="font-size:4rem;color:var(--primary);opacity:0.6;"></i>
+                </div>
+                <p class="text-success small mt-2 mb-0">✓ Merchant: FlyEase Travels Pvt Ltd</p>
+              </div>
+            </div>
+
+            <!-- NET BANKING FORM -->
+            <div class="payment-form-pane hidden" data-pane="NET_BANKING">
+              <div class="pay-method-intro glass-inner p-3 mb-4 rounded">
+                <i class="fa-solid fa-building-columns text-primary me-2"></i>
+                <span class="muted small">Select your bank. You will be redirected to your bank's secure net-banking portal to complete payment.</span>
+              </div>
+              <div class="form-group mb-3">
+                <label class="pay-field-label">Select Bank *</label>
+                <select id="pay-bank-select" class="form-control form-control-lg">
+                  <option value="">— Choose your bank —</option>
+                  <option value="HDFC">HDFC Bank</option>
+                  <option value="ICICI">ICICI Bank</option>
+                  <option value="SBI">State Bank of India (SBI)</option>
+                  <option value="AXIS">Axis Bank</option>
+                  <option value="KOTAK">Kotak Mahindra Bank</option>
+                  <option value="YES">Yes Bank</option>
+                  <option value="PNB">Punjab National Bank</option>
+                  <option value="BOB">Bank of Baroda</option>
+                  <option value="CANARA">Canara Bank</option>
+                  <option value="UNION">Union Bank of India</option>
+                  <option value="INDUSIND">IndusInd Bank</option>
+                  <option value="RBL">RBL Bank</option>
+                  <option value="OTHER">Other Bank</option>
+                </select>
+                <div class="inline-error-msg hidden" id="err-bank-select">Please select your bank.</div>
+              </div>
+              <div class="form-group">
+                <label class="pay-field-label">Customer ID / User ID (optional)</label>
+                <input type="text" id="pay-bank-customer" class="form-control form-control-lg" placeholder="Enter your net-banking user ID">
+              </div>
+              <div class="netbank-icon-row flex justify-around mt-4 flex-wrap gap-3">
+                <div class="netbank-icon-card glass-inner p-2"><i class="fa-solid fa-building-columns text-primary"></i> HDFC</div>
+                <div class="netbank-icon-card glass-inner p-2"><i class="fa-solid fa-building-columns text-secondary"></i> ICICI</div>
+                <div class="netbank-icon-card glass-inner p-2"><i class="fa-solid fa-building-columns text-warning"></i> SBI</div>
+                <div class="netbank-icon-card glass-inner p-2"><i class="fa-solid fa-building-columns text-danger"></i> AXIS</div>
+                <div class="netbank-icon-card glass-inner p-2"><i class="fa-solid fa-building-columns text-success"></i> +100 More</div>
+              </div>
+            </div>
+
+            <!-- WALLET FORM -->
+            <div class="payment-form-pane hidden" data-pane="WALLET">
+              <div class="pay-method-intro glass-inner p-3 mb-4 rounded">
+                <i class="fa-solid fa-wallet text-primary me-2"></i>
+                <span class="muted small">Select your preferred digital wallet. Balance will be deducted from your wallet account.</span>
+              </div>
+              <div class="wallet-options-grid mb-3">
+                <label class="wallet-option-card glass-inner">
+                  <input type="radio" name="wallet-provider" value="PAYTM" class="wallet-radio">
+                  <div class="wallet-checkmark"><i class="fa-solid fa-check"></i></div>
+                  <div class="wallet-icon" style="background:linear-gradient(135deg,#00b9f5,#0077c5);">
+                    <span class="wallet-text-logo"><b>Pay</b>tm</span>
+                  </div>
+                  <span class="wallet-name">Paytm Wallet</span>
+                </label>
+                <label class="wallet-option-card glass-inner">
+                  <input type="radio" name="wallet-provider" value="PHONEPE" class="wallet-radio">
+                  <div class="wallet-checkmark"><i class="fa-solid fa-check"></i></div>
+                  <div class="wallet-icon" style="background:linear-gradient(135deg,#5f259f,#8a52c4);">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                  </div>
+                  <span class="wallet-name">PhonePe</span>
+                </label>
+                <label class="wallet-option-card glass-inner">
+                  <input type="radio" name="wallet-provider" value="AMAZONPAY" class="wallet-radio">
+                  <div class="wallet-checkmark"><i class="fa-solid fa-check"></i></div>
+                  <div class="wallet-icon" style="background:linear-gradient(135deg,#ff9900,#146eb4);">
+                    <span class="wallet-text-logo"><b>amazon</b>.pay</span>
+                  </div>
+                  <span class="wallet-name">Amazon Pay</span>
+                </label>
+                <label class="wallet-option-card glass-inner">
+                  <input type="radio" name="wallet-provider" value="MOBIKWIK" class="wallet-radio">
+                  <div class="wallet-checkmark"><i class="fa-solid fa-check"></i></div>
+                  <div class="wallet-icon" style="background:linear-gradient(135deg,#00a8e1,#00529d);">
+                    <i class="fa-solid fa-wallet"></i>
+                  </div>
+                  <span class="wallet-name">Mobikwik</span>
+                </label>
+                <label class="wallet-option-card glass-inner">
+                  <input type="radio" name="wallet-provider" value="FREECHARGE" class="wallet-radio">
+                  <div class="wallet-checkmark"><i class="fa-solid fa-check"></i></div>
+                  <div class="wallet-icon" style="background:linear-gradient(135deg,#1da1d8,#a640db);">
+                    <i class="fa-solid fa-bolt"></i>
+                  </div>
+                  <span class="wallet-name">Freecharge</span>
+                </label>
+                <label class="wallet-option-card glass-inner">
+                  <input type="radio" name="wallet-provider" value="OLA" class="wallet-radio">
+                  <div class="wallet-checkmark"><i class="fa-solid fa-check"></i></div>
+                  <div class="wallet-icon" style="background:linear-gradient(135deg,#000000,#333333);">
+                    <span class="wallet-text-logo"><b>OLA</b></span>
+                  </div>
+                  <span class="wallet-name">Ola Money</span>
+                </label>
+              </div>
+              <div class="inline-error-msg hidden" id="err-wallet-select">Please select a wallet provider.</div>
+              <div class="form-group mt-3">
+                <label class="pay-field-label">Wallet Mobile Number *</label>
+                <input type="tel" id="pay-wallet-phone" class="form-control form-control-lg" maxlength="15" placeholder="+91 9XXXXXXXXX" value="919876543210">
+                <div class="inline-error-msg hidden" id="err-wallet-phone">Enter your 10-digit wallet-registered mobile number.</div>
+              </div>
+              <div class="muted small mt-2 p-2 glass-inner rounded">
+                <i class="fa-solid fa-circle-info text-primary me-1"></i>
+                You will receive an OTP / payment request on your registered mobile number.
+              </div>
+            </div>
+
+            <!-- COUNTER / CASH FORM -->
+            <div class="payment-form-pane hidden" data-pane="COUNTER">
+              <div class="counter-intro-card glass-inner p-4 rounded mb-4 text-center">
+                <div class="counter-icon-wrap mb-3 flex align-center justify-center mx-auto">
+                  <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <h4 class="text-gradient m-0 mb-1">Pay at Airport Counter</h4>
+                <p class="muted small mb-0">Reserve your booking now and pay at any FlyEase airport ticket counter before departure. Booking is held for <b class="text-warning">48 hours</b>.</p>
+              </div>
+              <div class="form-group mb-3">
+                <label class="pay-field-label">Preferred Payment Mode at Counter *</label>
+                <select id="pay-counter-mode" class="form-control form-control-lg">
+                  <option value="CASH">Cash</option>
+                  <option value="CARD">Card (Debit / Credit)</option>
+                  <option value="UPI">UPI / QR Scan</option>
+                  <option value="DD">Demand Draft</option>
+                </select>
+              </div>
+              <div class="form-group mb-3">
+                <label class="pay-field-label">Identification for Counter Pickup *</label>
+                <input type="text" id="pay-counter-id" class="form-control form-control-lg" placeholder="Government ID number (Aadhaar / PAN / Passport)" value="1234-5678-9012">
+                <div class="inline-error-msg hidden" id="err-counter-id">Please enter your ID number for verification at the counter.</div>
+              </div>
+              <div class="terms-banner p-3 glass-inner rounded mt-3">
+                <p class="small muted mb-1"><i class="fa-solid fa-triangle-exclamation text-warning me-1"></i><b>Important:</b></p>
+                <ul class="small muted m-0 ps-3" style="line-height:1.8;">
+                  <li>Your booking will be held for 48 hours from time of reservation.</li>
+                  <li>Failing to pay at counter within the hold period cancels this reservation automatically.</li>
+                  <li>Original government-issued photo ID is <u>mandatory</u> at time of counter payment.</li>
+                  <li>Seats are guaranteed only upon successful counter payment.</li>
+                </ul>
+              </div>
+            </div>
+
+          </div><!-- end forms container -->
+        </div>
+      </div>
+
+      <!-- RIGHT: Sticky Payment Summary -->
+      <div class="payment-sidebar-col">
+        <div class="sticky-pay-summary glass p-4 sticky" style="top: 90px;">
+          <div class="flex justify-between align-center mb-2">
+            <h4 class="m-0">Payment Summary</h4>
+            <span class="badge badge-pill badge-primary"><i class="fa-solid fa-shield text-success me-1"></i> Secure</span>
+          </div>
+          <hr class="glass-divider my-3">
+
+          <div class="flight-mini-card glass-inner p-3 mb-4 rounded">
+            <div class="flex align-center justify-between">
+              <div>
+                <div class="text-gradient font-weight-bold" id="pay-sum-route">BOM → DEL</div>
+                <div class="small muted" id="pay-sum-flight">FE-1024</div>
+              </div>
+              <div class="text-right">
+                <div class="small muted">Departs</div>
+                <div class="font-weight-bold" id="pay-sum-date">15 Aug</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-line flex justify-between mb-2">
+            <span class="muted">Passengers</span>
+            <strong id="pay-sum-pax">1 Adult</strong>
+          </div>
+          <div class="summary-line flex justify-between mb-2">
+            <span class="muted">Seat(s)</span>
+            <strong id="pay-sum-seats" class="text-secondary">12A</strong>
+          </div>
+
+          <hr class="glass-divider my-3">
+
+          <div class="fare-breakdown-list">
+            <div class="summary-row flex justify-between mb-1">
+              <span class="muted">Base Fare</span>
+              <strong id="pay-sum-base">₹0</strong>
+            </div>
+            <div class="summary-row flex justify-between mb-1">
+              <span class="text-warning">Dynamic Fare</span>
+              <strong id="pay-sum-dynamic">₹0</strong>
+            </div>
+            <div class="summary-row flex justify-between mb-1">
+              <span class="text-primary">Seat Upgrades</span>
+              <strong id="pay-sum-seatfees">₹0</strong>
+            </div>
+            <div class="summary-row flex justify-between mb-1">
+              <span class="text-success">Add-on Services</span>
+              <strong id="pay-sum-services">₹0</strong>
+            </div>
+            <div class="summary-row flex justify-between mb-1">
+              <span class="muted">Taxes & Fees (18%)</span>
+              <strong id="pay-sum-taxes">₹0</strong>
+            </div>
+            <div class="summary-row flex justify-between mb-1 text-accent hidden" id="pay-sum-discount-row">
+              <span>Promo Discount</span>
+              <strong id="pay-sum-discount">-₹0</strong>
+            </div>
+          </div>
+
+          <hr class="glass-divider my-3">
+
+          <div class="total-price-block flex justify-between align-center mb-4">
+            <div>
+              <div class="small muted">Total Payable</div>
+              <div class="micro-text muted">All charges included</div>
+            </div>
+            <h2 id="pay-sum-total" class="text-gradient m-0 font-weight-bold" style="font-size:1.8rem;">₹0</h2>
+          </div>
+
+          <!-- Processing Animation -->
+          <div id="pay-processing-overlay" class="pay-processing-overlay hidden">
+            <div class="pay-processing-spinner">
+              <i class="fa-solid fa-circle-notch fa-spin"></i>
+            </div>
+            <div class="mt-3 text-center">
+              <div class="h5 font-weight-bold mb-1">Processing Payment…</div>
+              <div class="small muted" id="pay-processing-subtitle">Securely connecting to payment gateway</div>
+            </div>
+          </div>
+
+          <button type="button" id="confirm-booking-btn" class="btn btn-primary btn-large w-100 confirm-pay-btn">
+            <span id="pay-btn-text">
+              <i class="fa-solid fa-lock me-2"></i>
+              Pay <span id="pay-btn-amount">₹0</span> Now
+            </span>
+            <span id="pay-btn-loading" class="hidden">
+              <i class="fa-solid fa-circle-notch fa-spin me-2"></i> Processing…
+            </span>
+          </button>
+
+          <div class="flex align-center justify-center gap-3 mt-3 small muted flex-wrap">
+            <span><i class="fa-brands fa-cc-visa text-muted"></i></span>
+            <span><i class="fa-brands fa-cc-mastercard text-muted"></i></span>
+            <span><i class="fa-brands fa-cc-amex text-muted"></i></span>
+            <span><i class="fa-solid fa-building-columns text-muted"></i></span>
+            <span><i class="fa-brands fa-google-pay text-muted"></i></span>
+            <span><i class="fa-solid fa-wallet text-muted"></i></span>
+          </div>
+          <p class="small muted text-center mt-3 mb-0">
+            <i class="fa-solid fa-lock text-success me-1"></i>
+            Mock Payment Gateway — No real charge occurs. Simulator only.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- STEP 6: BOOKING CONFIRMATION (PREMIUM) -->
+<section id="step-confirmation" class="step-section hidden">
+  <div class="container mt-4 pb-5">
+
+    <!-- Booking Progress -->
+    <div class="booking-progress max-w-1280 mb-4">
+      <div class="progress-step completed"><i class="fa-solid fa-circle-check text-success check-animated"></i> Flight</div>
+      <div class="progress-line completed"></div>
+      <div class="progress-step completed"><i class="fa-solid fa-circle-check text-success check-animated"></i> Seat</div>
+      <div class="progress-line completed"></div>
+      <div class="progress-step completed"><i class="fa-solid fa-circle-check text-success check-animated"></i> Passenger</div>
+      <div class="progress-line completed"></div>
+      <div class="progress-step completed"><i class="fa-solid fa-circle-check text-success check-animated"></i> Payment</div>
+      <div class="progress-line completed"></div>
+      <div class="progress-step active completed-step"><div class="glow-ring"></div> Confirmed</div>
+    </div>
+
+    <div class="confirmation-layout-grid max-w-1280 mt-4">
+
+      <!-- LEFT: Confirmation Content -->
+      <div class="confirmation-main-col">
+
+        <!-- Success Banner -->
+        <div class="confirmation-banner glass p-5 mb-4 text-center">
+          <div class="success-check-ring mx-auto mb-3">
+            <svg class="check-svg" viewBox="0 0 100 100">
+              <circle class="check-circle" cx="50" cy="50" r="45"/>
+              <path class="check-mark" fill="none" d="M27 52 L44 70 L73 34" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h1 class="mb-1 text-gradient h1">Booking Confirmed! 🎉</h1>
+          <p class="muted mb-0" style="font-size:1.05rem;">
+            Your e-ticket has been issued and a copy has been sent to your registered email.
+          </p>
+
+          <div class="conf-badges-row mt-4 flex justify-center gap-3 flex-wrap">
+            <div class="conf-badge conf-badge-pnr glass-inner">
+              <span class="conf-badge-label">PNR</span>
+              <span class="conf-badge-value" id="conf-pnr-main">--------</span>
+            </div>
+            <div class="conf-badge conf-badge-ticket glass-inner">
+              <span class="conf-badge-label">Ticket #</span>
+              <span class="conf-badge-value" id="conf-ticket-main">FE--------------</span>
+            </div>
+            <div class="conf-badge conf-badge-status glass-inner">
+              <span class="conf-status-dot"></span>
+              <span class="conf-status-label">PAYMENT: <b id="conf-payment-status">SUCCESS</b></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PNR Strip -->
+        <div class="pnr-strip-card glass mb-4 p-3 d-none" id="conf-pnr-strip-container">
+          <div id="conf-pnr" class="pnr-chips flex gap-2 justify-center flex-wrap"></div>
+        </div>
+
+        <!-- E-Ticket Card -->
+        <div class="ticket-card-premium glass p-0 mb-4 overflow-hidden">
+          <!-- E-Ticket Header -->
+          <div class="eticket-header d-flex justify-between align-center p-4">
+            <div class="flex align-center gap-2">
+              <i class="fa-solid fa-ticket text-gradient" style="font-size:1.6rem;"></i>
+              <div>
+                <h4 class="m-0 text-gradient">FlyEase E-Ticket / Itinerary</h4>
+                <div class="small muted">Official booking receipt — valid at airport check-in</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="small muted">Issued</div>
+              <div class="font-weight-bold" id="conf-issued-date">--</div>
+            </div>
+          </div>
+          <hr class="m-0 glass-divider">
+
+          <!-- Flight Route -->
+          <div class="eticket-route p-4">
+            <div class="route-timeline flex justify-between align-items">
+              <div class="route-point text-left">
+                <div class="route-iata text-gradient" id="conf-orig-code">BOM</div>
+                <div class="route-city" id="conf-orig-city">Mumbai</div>
+                <div class="small muted mt-1">
+                  <b>Departs</b><br>
+                  <span id="conf-dep-datetime">--</span>
+                </div>
+              </div>
+              <div class="route-mid flex-1 text-center mx-3">
+                <div class="route-duration small muted mb-1" id="conf-duration">2h 05m</div>
+                <div class="route-line relative">
+                  <i class="fa-solid fa-plane route-plane text-primary absolute"></i>
+                </div>
+                <div class="small text-success mt-1">Non-stop</div>
+              </div>
+              <div class="route-point text-right">
+                <div class="route-iata text-gradient" id="conf-dest-code">DEL</div>
+                <div class="route-city" id="conf-dest-city">Delhi</div>
+                <div class="small muted mt-1">
+                  <b>Arrives</b><br>
+                  <span id="conf-arr-datetime">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr class="m-0 glass-divider">
+
+          <!-- Flight Details Row -->
+          <div class="eticket-details p-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;">
+            <div>
+              <div class="muted tiny mb-0-5">FLIGHT</div>
+              <div class="font-weight-bold" id="conf-flight-id">FE-1024</div>
+              <div class="small muted" id="conf-airline-name">FlyEase</div>
+            </div>
+            <div>
+              <div class="muted tiny mb-0-5">AIRCRAFT</div>
+              <div class="font-weight-bold" id="conf-aircraft">Boeing 737</div>
+              <div class="small muted" id="conf-cabin">Economy</div>
+            </div>
+            <div>
+              <div class="muted tiny mb-0-5">SEAT(S)</div>
+              <div class="font-weight-bold text-secondary" id="conf-seats">12A</div>
+              <div class="small muted">Selected</div>
+            </div>
+            <div>
+              <div class="muted tiny mb-0-5">PASSENGERS</div>
+              <div class="font-weight-bold" id="conf-pax-count">1 Adult</div>
+              <div class="small muted" id="conf-total-paid-label">Total Paid</div>
+            </div>
+          </div>
+          <hr class="m-0 glass-divider perforation">
+
+          <!-- Passenger List -->
+          <div class="eticket-passengers p-4" id="conf-passengers-list">
+            <!-- Injected by script.js -->
+          </div>
+          <hr class="m-0 glass-divider perforation">
+
+          <!-- Fare & Payment Row -->
+          <div class="eticket-fare p-4" style="display:grid;grid-template-columns:2fr 1fr;gap:2rem;">
+            <div class="fare-left">
+              <h5 class="mb-3">Fare Breakdown</h5>
+              <div id="conf-fare-breakdown" class="fare-list">
+                <!-- Injected by script.js -->
+              </div>
+            </div>
+            <div class="fare-right text-right">
+              <div class="muted tiny mb-1">TOTAL AMOUNT PAID</div>
+              <div class="h2 text-gradient m-0" id="conf-total">₹0</div>
+              <div class="small muted mt-2">
+                Via: <b id="conf-payment-method">Credit/Debit Card</b>
+              </div>
+              <div class="small muted">
+                TXN ID: <span id="conf-txn-id" class="text-muted font-mono">N/A</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- QR & Footer -->
+          <div class="eticket-footer p-4 bg-dark-light flex align-center justify-between flex-wrap gap-3">
+            <div>
+              <div class="small muted">Verify ticket via QR code at the airport</div>
+              <div class="small muted mt-1">
+                Booking ID: <span class="font-mono" id="conf-booking-id">-</span>
+              </div>
+            </div>
+            <div class="qr-placeholder flex align-center gap-3">
+              <div class="qr-box flex align-center justify-center">
+                <i class="fa-solid fa-qrcode text-primary" style="font-size:3rem;opacity:0.85;"></i>
+              </div>
+              <div class="small muted text-left">
+                <div>Scan for check-in</div>
+                <div class="font-mono" id="conf-qr-data">FLYEASE|PNR:-----</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons Row -->
+        <div class="confirmation-actions flex gap-3 justify-center flex-wrap">
+          <button type="button" class="btn btn-primary btn-large" id="conf-view-pass-btn" onclick="app.openBoardingPassModal()">
+            <i class="fa-solid fa-ticket me-2"></i> View Boarding Pass
+          </button>
+          <button type="button" class="btn btn-outline btn-large" id="conf-download-pdf-btn">
+            <i class="fa-solid fa-file-pdf me-2"></i> Download PDF Ticket
+          </button>
+          <button type="button" class="btn btn-outline btn-large" id="conf-view-booking-btn">
+            <i class="fa-solid fa-suitcase-rolling me-2"></i> My Trips & Airport Mode
+          </button>
+          <button type="button" class="btn btn-outline btn-large" onclick="window.print()">
+            <i class="fa-solid fa-print me-2"></i> Print Ticket
+          </button>
+          <button type="button" class="btn btn-ghost btn-large" onclick="location.href='/'">
+            <i class="fa-solid fa-plane-departure me-2"></i> Book Another Flight
+          </button>
+        </div>
+      </div>
+
+      <!-- Digital Boarding Pass Modal -->
+      <div id="boarding-pass-modal" class="global-modal-overlay hidden" onclick="if(event.target === this) app.closeBoardingPassModal()">
+        <div class="global-modal-card glass p-4" style="max-width: 680px; width: 95%;">
+          <div class="modal-header-row flex justify-between align-center mb-3">
+            <div class="flex align-center gap-2">
+              <div class="modal-icon-circle"><i class="fa-solid fa-plane-up text-primary"></i></div>
+              <div>
+                <h3 class="m-0 text-gradient font-display">FlyEase Official Boarding Pass</h3>
+                <p class="muted small m-0">Priority Electronic Pass & QR Gate Access</p>
+              </div>
+            </div>
+            <button type="button" class="btn-close-modal" onclick="app.closeBoardingPassModal()"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <hr class="glass-divider mb-3">
+          
+          <div id="boarding-pass-modal-content">
+            <!-- Dynamically injected boarding pass card with real data and QR -->
+          </div>
+
+          <div class="flex justify-between align-center mt-3 pt-3 border-top border-secondary flex-wrap gap-2">
+            <button type="button" class="btn btn-outline btn-sm" onclick="window.print()"><i class="fa-solid fa-print me-1"></i> Print Pass</button>
+            <div class="flex gap-2">
+              <button type="button" class="btn btn-primary btn-sm" id="modal-pass-download-pdf"><i class="fa-solid fa-file-pdf me-1"></i> Download PDF</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="app.closeBoardingPassModal()">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Booking Tips / Next Steps Card -->
+      <div class="confirmation-sidebar-col">
+        <div class="next-steps-card glass p-4 sticky" style="top: 90px;">
+          <h4 class="mb-3"><i class="fa-solid fa-circle-info text-primary me-1"></i> Next Steps</h4>
+          <hr class="glass-divider mb-3">
+          <div class="next-step-item mb-3">
+            <div class="next-step-num flex align-center justify-center">1</div>
+            <div>
+              <b>Download E-Ticket</b>
+              <div class="small muted">Keep the PDF handy. Available offline on any device.</div>
+            </div>
+          </div>
+          <div class="next-step-item mb-3">
+            <div class="next-step-num flex align-center justify-center">2</div>
+            <div>
+              <b>Web / Mobile Check-in</b>
+              <div class="small muted">Opens 24 hours before departure. Select your preferred seat.</div>
+            </div>
+          </div>
+          <div class="next-step-item mb-3">
+            <div class="next-step-num flex align-center justify-center">3</div>
+            <div>
+              <b>Reach Airport Early</b>
+              <div class="small muted">Domestic: 2h before · International: 3h before departure.</div>
+            </div>
+          </div>
+          <div class="next-step-item mb-3">
+            <div class="next-step-num flex align-center justify-center">4</div>
+            <div>
+              <b>Carry Valid Photo ID</b>
+              <div class="small muted">Aadhaar · PAN · Driver License · Passport (mandatory for intl).</div>
+            </div>
+          </div>
+          <hr class="glass-divider mt-4 mb-3">
+          <div class="support-block p-3 glass-inner rounded text-center">
+            <i class="fa-solid fa-headset text-primary font-large"></i>
+            <div class="mt-2"><b>Need Help?</b></div>
+            <div class="small muted">24×7 Travel Support</div>
+            <div class="text-primary mt-1 font-weight-bold">
+              <a href="tel:+919307145593" class="text-primary text-decoration-none">9307145593</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Include available airports data as a JSON script block for autocomplete -->
+{{ airports|json_script:"airports-data" }}
+{% endblock %}

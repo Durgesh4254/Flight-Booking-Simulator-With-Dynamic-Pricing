@@ -1,0 +1,48 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}System Alerts | FlyEase Admin{% endblock %}
+{% block page_title %}Real-Time Operations & Surge Alert Center{% endblock %}
+
+{% block content %}
+<div class="admin-glass-card">
+  <div class="admin-glass-card-header">
+    <h3 class="admin-card-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--admin-rose);"></i> Live Operations & Scarcity Alerts</h3>
+  </div>
+
+  <div id="alerts-feed-full" style="display:flex;flex-direction:column;gap:1rem;">
+    <div style="text-align:center;padding:2rem;color:var(--admin-text-muted);">Loading system alerts...</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  async function loadAlertsFull() {
+    try {
+      const res = await fetch('/admin-portal/api/alerts/');
+      const data = await res.json();
+      const cont = document.getElementById('alerts-feed-full');
+
+      if (data.alerts.length === 0) {
+        cont.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--admin-text-muted);">All system operations are healthy. No active alerts.</div>';
+        return;
+      }
+
+      cont.innerHTML = data.alerts.map(a => `
+        <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.08);border-left:5px solid ${a.level === 'CRITICAL' ? 'var(--admin-rose)' : 'var(--admin-amber)'};padding:1rem 1.25rem;border-radius:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+            <div style="font-size:1.05rem;font-weight:700;color:#fff;">${a.title}</div>
+            <span style="font-size:0.75rem;color:var(--admin-text-dim);">${a.created_at}</span>
+          </div>
+          <div style="color:var(--admin-text-muted);font-size:0.88rem;margin-bottom:0.6rem;">${a.message}</div>
+          <div style="font-size:0.8rem;color:var(--admin-cyan);"><i class="fa-solid fa-lightbulb me-1"></i> Recommendation: ${a.action_recommended}</div>
+        </div>
+      `).join('');
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadAlertsFull);
+</script>
+{% endblock %}

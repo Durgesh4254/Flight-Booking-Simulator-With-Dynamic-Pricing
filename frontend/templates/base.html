@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FlyEase ✈️ | Smart Flight Booking{% endblock %}</title>
+  {% load static %}
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <link rel="stylesheet" href="{% static 'style.css' %}?v=150">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  
+  <!-- Background Animation -->
+  <div class="bg-animation">
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+  </div>
+
+  <!-- Premium Navbar -->
+  <nav class="navbar glass sticky">
+    <div class="nav-brand">
+      <a href="/">
+        <i class="fa-solid fa-plane-up text-gradient"></i> 
+        <span>Fly<span class="text-gradient">Ease</span></span>
+      </a>
+    </div>
+
+    <!-- Mobile Hamburger Toggle -->
+    <button type="button" class="nav-mobile-toggle" id="nav-mobile-toggle" aria-label="Toggle navigation">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <div class="nav-links" id="nav-links">
+      <a href="/" class="{% if active_page == 'home' %}active{% endif %}">Home</a>
+      <a href="/destinations/" class="{% if active_page == 'destinations' %}active{% endif %}">Destinations</a>
+      <a href="/deals/" class="{% if active_page == 'deals' %}active{% endif %}">Deals</a>
+      <a href="/about/" class="{% if active_page == 'about' %}active{% endif %}">About</a>
+      {% if request.user.is_authenticated %}
+        <a href="/dashboard/" class="{% if active_page == 'dashboard' %}active{% endif %}">My Trips</a>
+        <a href="/logout/" class="btn-outline">Logout</a>
+        <div class="user-avatar" title="{{ request.user.username }}">{{ request.user.username|make_list|first|upper }}</div>
+      {% else %}
+        <a href="/login/" class="btn-outline {% if active_page == 'login' %}active{% endif %}">Login</a>
+        <a href="/register/" class="btn-primary glow-btn {% if active_page == 'register' %}active{% endif %}">Sign Up</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- Notification Center Drawer Overlay -->
+  <div id="notification-drawer-overlay" class="notification-overlay hidden" onclick="if(event.target === this) app.toggleNotificationDrawer()">
+    <div class="notification-drawer glass">
+      <div class="drawer-header flex justify-between align-center p-3">
+        <div class="flex align-center gap-2">
+          <i class="fa-solid fa-bell text-primary"></i>
+          <h4 class="m-0">Notification Center</h4>
+        </div>
+        <div class="flex align-center gap-2">
+          <button type="button" class="btn btn-outline btn-xs" onclick="app.markAllNotificationsRead()">Mark all as read</button>
+          <button type="button" class="btn-close-modal" onclick="app.toggleNotificationDrawer()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <hr class="glass-divider m-0">
+      <div class="notification-list p-3" id="notification-items-list">
+        <!-- Injected dynamically by script.js -->
+      </div>
+      <div class="drawer-footer p-2 text-center">
+        <button type="button" class="btn btn-link btn-xs text-muted" onclick="app.clearAllNotifications()">Clear All Notifications</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Professional Footer -->
+  <footer class="glass-footer">
+    <div class="footer-content max-w-1280">
+      <div class="footer-brand">
+        <h3><i class="fa-solid fa-plane-up text-primary"></i> FlyEase</h3>
+        <p class="mt-2 text-muted">"Fly Smarter. Book Better."</p>
+        <p class="text-muted small mb-3">Your journey starts with a smarter flight.</p>
+        <div class="social-icons flex gap-3 mt-3">
+          <a href="https://www.instagram.com/_durgesh_sonawane?igsh=ZTFleDhybHU0bzk=" target="_blank" rel="noopener noreferrer" class="social-icon instagram-icon" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://www.linkedin.com/in/durgesh-sonawane-902943292" target="_blank" rel="noopener noreferrer" class="social-icon linkedin-icon" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="/about/">About Us</a>
+          <a href="/careers/">Careers</a>
+          <a href="/press/">Press & Media</a>
+          <a href="/contact/">Contact Us</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="/help/">Help Center</a>
+          <a href="/faqs/">FAQs</a>
+          <a href="/booking-support/">Booking Support</a>
+          <a href="/baggage-info/">Baggage Info</a>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="/destinations/">Destinations</a>
+          <a href="/deals/">Special Deals</a>
+          <a href="/airlines/">Partner Airlines</a>
+          <a href="/flight-status/">Flight Status</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="/privacy/">Privacy Policy</a>
+          <a href="/terms/">Terms of Service</a>
+          <a href="/refund/">Refund Policy</a>
+          <a href="/security/">Security Center</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 FlyEase Simulator. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Three.js CDN for 3D Earth and Aircraft Route Visualizations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- ✈️ FlyEase AI Floating Assistant Widget -->
+  <div id="flyease-ai-fab-container">
+    <button type="button" id="flyease-ai-fab-btn" onclick="app.toggleAIChat()" title="Ask FlyEase AI Assistant">
+      <span class="ai-fab-pulse"></span>
+      <span class="ai-fab-icon">✈️</span>
+      <span class="ai-fab-label">FlyEase AI</span>
+    </button>
+  </div>
+
+  <!-- AI Chat Window -->
+  <div id="flyease-ai-chat-window" class="glass-ai-chat-card hidden">
+    <div class="ai-chat-header flex justify-between align-center">
+      <div class="flex align-center gap-2">
+        <div class="ai-avatar-badge">✈️</div>
+        <div>
+          <h4 class="m-0 text-white" style="font-size:0.95rem;">FlyEase AI Assistant</h4>
+          <span class="ai-status-indicator"><span class="ai-dot-pulse"></span> Powered by Live Flight Data & Groq</span>
+        </div>
+      </div>
+      <div class="flex align-center gap-1">
+        <button type="button" class="btn-chat-action" onclick="app.clearAIChat()" title="Clear chat"><i class="fa-solid fa-rotate-left"></i></button>
+        <button type="button" class="btn-chat-action" onclick="app.toggleAIChat()" title="Close chat"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>
+
+    <!-- Quick Prompts Pill Bar -->
+    <div class="ai-quick-prompts-bar">
+      <button type="button" class="ai-chip-prompt" onclick="app.sendQuickAIPrompt('Find me the cheapest flights to London')">💰 Cheapest to London</button>
+      <button type="button" class="ai-chip-prompt" onclick="app.sendQuickAIPrompt('What are the baggage rules for domestic flights?')">🧳 Baggage Rules</button>
+      <button type="button" class="ai-chip-prompt" onclick="app.sendQuickAIPrompt('What documents and visa do I need for Dubai?')">🛂 Dubai Visa & Docs</button>
+      <button type="button" class="ai-chip-prompt" onclick="app.sendQuickAIPrompt('Which flight is best for family travel?')">👨‍👩‍👧 Best for Family</button>
+    </div>
+
+    <!-- Chat Messages Stream -->
+    <div id="flyease-ai-messages-list" class="ai-messages-container">
+      <div class="ai-message-bubble bot-message">
+        <div class="bot-msg-content">
+          <p class="m-0">Hello! I am <strong>FlyEase AI</strong> ✈️. I can search real-time flight fares, predict price trends, check visa & document requirements, and explain baggage rules. How can I help your journey today?</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Input Footer -->
+    <form id="flyease-ai-input-form" onsubmit="app.handleAISubmit(event)" class="ai-chat-input-form">
+      <input type="text" id="flyease-ai-input" placeholder="Ask about flights, visa rules, baggage..." autocomplete="off" required>
+      <button type="submit" id="flyease-ai-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+    </form>
+  </div>
+
+  <!-- 🔔 Price Drop Alert Modal -->
+  <div id="price-alert-modal" class="global-modal-overlay hidden" onclick="if(event.target === this) { this.classList.add('hidden'); }">
+    <div class="global-modal-card glass p-4" style="max-width:480px;">
+      <div class="modal-header-row flex justify-between align-center mb-3">
+        <div class="flex align-center gap-2">
+          <div class="modal-icon-circle" style="background:rgba(16,185,129,0.2);"><i class="fa-solid fa-bell text-emerald"></i></div>
+          <h3 class="m-0 text-white" style="font-size:1.15rem;">Track Price & Set Drop Alert</h3>
+        </div>
+        <button type="button" class="btn-close-modal" onclick="document.getElementById('price-alert-modal').classList.add('hidden'); event.stopPropagation();" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="text-muted small mb-3">We will automatically monitor seat inventory and send you an instant email notification as soon as the fare drops to your target price.</p>
+      <form id="price-alert-form" onsubmit="app.handleCreatePriceAlert(event)">
+        <input type="hidden" id="alert_flight_id">
+        <input type="hidden" id="alert_origin">
+        <input type="hidden" id="alert_destination">
+        <input type="hidden" id="alert_date">
+        <input type="hidden" id="alert_class">
+        <input type="hidden" id="alert_current_price">
+
+        <div class="alert-route-summary p-3 glass-inner rounded mb-3 flex justify-between align-center">
+          <div>
+            <strong id="alert-route-text" class="text-white" style="font-size:1.05rem;">BOM → DEL</strong>
+            <div id="alert-date-text" class="text-muted small">Departure: 2026-08-20</div>
+          </div>
+          <div class="text-right">
+            <span class="text-muted tiny">Current Fare</span>
+            <div id="alert-current-price-text" class="text-primary font-weight-bold" style="font-size:1.1rem;">₹4,850</div>
+          </div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label text-muted small">Target Notification Price (₹ INR)</label>
+          <input type="number" id="alert_target_price" class="form-input w-100" placeholder="e.g. 4200" required>
+          <span class="text-muted tiny mt-1">Recommended: Set ₹300-₹800 below current price.</span>
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label text-muted small">Email Address for Price Alerts</label>
+          <input type="email" id="alert_email" class="form-input w-100" placeholder="yourname@example.com" required>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('price-alert-modal').classList.add('hidden')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-bell me-1"></i> Activate Price Alert</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 🛂 Destination Visa & Travel Requirements Modal -->
+  <div id="travel-requirements-modal" class="global-modal-overlay hidden" onclick="if(event.target === this) { this.classList.add('hidden'); }">
+    <div class="global-modal-card glass p-4" style="max-width:580px;max-height:85vh;overflow-y:auto;">
+      <div class="modal-header-row flex justify-between align-center mb-3">
+        <div class="flex align-center gap-2">
+          <div class="modal-icon-circle" style="background:rgba(14,165,233,0.2);"><i class="fa-solid fa-passport text-primary"></i></div>
+          <h3 class="m-0 text-white" id="req-modal-title" style="font-size:1.15rem;">Travel & Visa Guidelines</h3>
+        </div>
+        <button type="button" class="btn-close-modal" onclick="document.getElementById('travel-requirements-modal').classList.add('hidden'); event.stopPropagation();" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div id="req-modal-loading" class="text-center p-4">
+        <i class="fa-solid fa-circle-notch fa-spin text-primary fa-2x"></i>
+        <p class="text-muted small mt-2">Checking official travel & visa regulations...</p>
+      </div>
+
+      <div id="req-modal-content" class="hidden">
+        <!-- Injected dynamically -->
+      </div>
+      <div class="modal-footer-row mt-4 text-right">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="app.closeTravelRequirementsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⛅ Destination Weather Modal -->
+  <div id="destination-weather-modal" class="global-modal-overlay hidden" onclick="if(event.target === this) { this.classList.add('hidden'); }">
+    <div class="global-modal-card glass p-4" style="max-width:540px;">
+      <div class="modal-header-row flex justify-between align-center mb-3">
+        <div class="flex align-center gap-2">
+          <div class="modal-icon-circle" style="background:rgba(245,158,11,0.2);"><i class="fa-solid fa-cloud-sun text-amber"></i></div>
+          <h3 class="m-0 text-white" id="weather-modal-title" style="font-size:1.15rem;">Destination Weather</h3>
+        </div>
+        <button type="button" class="btn-close-modal" onclick="document.getElementById('destination-weather-modal').classList.add('hidden'); event.stopPropagation();" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div id="weather-modal-body">
+        <!-- Injected dynamically -->
+      </div>
+      <div class="modal-footer-row mt-4 text-right">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="app.closeWeatherModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D Flight Route Modal -->
+  <div id="route-3d-modal" class="global-modal-overlay hidden" onclick="if(event.target === this) { this.classList.add('hidden'); }">
+    <div class="global-modal-card glass p-4" style="max-width:720px;width:95%;">
+      <div class="modal-header-row flex justify-between align-center mb-2">
+        <div class="flex align-center gap-2">
+          <div class="modal-icon-circle"><i class="fa-solid fa-earth-americas text-primary"></i></div>
+          <h3 class="m-0 text-white" id="route3d-title">3D Great Circle Flight Route</h3>
+        </div>
+        <button type="button" class="btn-close-modal" onclick="app.closeRoute3DModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <!-- 3D WebGL Canvas Container -->
+      <div id="route-3d-canvas-container" style="width:100%;height:360px;background:#030814;border-radius:10px;position:relative;overflow:hidden;">
+        <div id="route-3d-overlay-stats" class="glass-inner p-2 rounded" style="position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;z-index:5;font-size:0.85rem;">
+          <span id="route-stat-distance" class="text-white">Distance: <strong>Calculating...</strong></span>
+          <span id="route-stat-duration" class="text-cyan">Duration: <strong>--</strong></span>
+          <span id="route-stat-altitude" class="text-emerald">Cruising: <strong>36,000 ft</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Info & Policy Modal -->
+  <div id="flyease-info-modal" class="global-modal-overlay hidden" onclick="if(event.target === this) app.closeInfoModal()">
+    <div class="global-modal-card glass p-4">
+      <div class="modal-header-row flex justify-between align-center mb-3">
+        <div class="flex align-center gap-2">
+          <div id="info-modal-icon" class="modal-icon-circle"><i class="fa-solid fa-circle-info text-primary"></i></div>
+          <h3 id="info-modal-title" class="m-0 text-gradient">Information</h3>
+        </div>
+        <button type="button" class="btn-close-modal" onclick="app.closeInfoModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <hr class="glass-divider mb-3">
+      <div id="info-modal-body" class="info-modal-content-body">
+        <!-- Injected dynamically -->
+      </div>
+      <div class="modal-footer-row mt-4 text-right">
+        <button type="button" class="btn btn-primary btn-sm" onclick="app.closeInfoModal()">Understood</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <script src="{% static 'destinations_catalog.js' %}?v=147"></script>
+  <script src="{% static 'features_registry.js' %}?v=147"></script>
+  <script src="{% static 'script.js' %}?v=147"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
+

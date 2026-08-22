@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}About FlyEase ✈️ | Smart Flight Booking Simulator{% endblock %}
+
+{% block content %}
+<section class="about-page-section">
+  <!-- Hero Section -->
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-plane-up text-primary me-1"></i> Aviation Tech Redefined</span>
+      <h1 class="page-title mt-2">Fly Smarter. Book Better.</h1>
+      <p class="page-subtitle muted max-w-750 mx-auto">
+        FlyEase is an intelligent flight-booking simulator engineered to bring real-time dynamic pricing, interactive 3D cabin seat maps, multi-method payment flows, and instant verifiable e-tickets to life.
+      </p>
+      <div class="flex justify-center gap-3 mt-4 flex-wrap">
+        <a href="/" class="btn btn-primary btn-large"><i class="fa-solid fa-magnifying-glass me-2"></i> Book Simulated Flight</a>
+        <a href="/deals/" class="btn btn-outline btn-large"><i class="fa-solid fa-tags me-2"></i> Explore Active Deals</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container max-w-1280 mt-5 pb-5">
+    <!-- Stats Row -->
+    <div class="stats-belt glass mb-5 p-4 rounded-xl">
+      <div class="stats-grid-new">
+        <div class="stat-item-new reveal">
+          <div class="stat-icon"><i class="fa-solid fa-plane-departure text-primary"></i></div>
+          <div class="stat-number" data-target="10000">10,000</div>
+          <div class="stat-suffix">+</div>
+          <p class="muted">Simulated Flights</p>
+        </div>
+        <div class="stat-item-new reveal" style="transition-delay:0.1s;">
+          <div class="stat-icon"><i class="fa-solid fa-earth-asia text-secondary"></i></div>
+          <div class="stat-number" data-target="50">50</div>
+          <div class="stat-suffix">+</div>
+          <p class="muted">Global Destinations</p>
+        </div>
+        <div class="stat-item-new reveal" style="transition-delay:0.2s;">
+          <div class="stat-icon"><i class="fa-solid fa-shield-halved text-success"></i></div>
+          <div class="stat-number" data-target="99.9">99.9</div>
+          <div class="stat-suffix">%</div>
+          <p class="muted">Booking Reliability</p>
+        </div>
+        <div class="stat-item-new reveal" style="transition-delay:0.3s;">
+          <div class="stat-icon"><i class="fa-solid fa-headset text-warning"></i></div>
+          <div class="stat-number" data-target="24">24</div>
+          <div class="stat-suffix">/7</div>
+          <p class="muted">Travel Support</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Who We Are / Mission / Vision Grid -->
+    <div class="about-pillars-grid mb-5">
+      <div class="about-pillar-card glass p-4 reveal">
+        <div class="pillar-icon-wrap" style="background:linear-gradient(135deg,#4f46e5,#818cf8);">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <h3 class="mt-3">Who We Are</h3>
+        <p class="muted mt-2">
+          FlyEase was built as an advanced algorithmic platform demonstrating airline dynamic yield management, intelligent flight reservation pipelines, and interactive digital customer journeys.
+        </p>
+      </div>
+
+      <div class="about-pillar-card glass p-4 reveal" style="transition-delay:0.15s;">
+        <div class="pillar-icon-wrap" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8);">
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+        <h3 class="mt-3">Our Mission</h3>
+        <p class="muted mt-2">
+          To simplify flight discovery and demonstrate how smart predictive pricing algorithms balance airline inventory while maximizing passenger convenience and fare transparency.
+        </p>
+      </div>
+
+      <div class="about-pillar-card glass p-4 reveal" style="transition-delay:0.3s;">
+        <div class="pillar-icon-wrap" style="background:linear-gradient(135deg,#10b981,#34d399);">
+          <i class="fa-solid fa-compass"></i>
+        </div>
+        <h3 class="mt-3">Our Vision</h3>
+        <p class="muted mt-2">
+          Pioneering modern frictionless travel interfaces with zero latency, verified promotional discounts, concurrency-safe seat locking, and instant PDF ticket generation.
+        </p>
+      </div>
+    </div>
+
+    <!-- Why Choose FlyEase Section -->
+    <div class="section-header text-center mb-5 reveal">
+      <span class="section-pill">Feature Pillars</span>
+      <h2 class="mt-2">Why Fly with FlyEase?</h2>
+      <p class="muted">Six core systems powering an unparalleled airline simulation platform.</p>
+    </div>
+
+    <div class="features-grid-new mb-5">
+      <div class="feature-card-new glass reveal">
+        <div class="feature-icon-wrap" style="background:linear-gradient(135deg,#4f46e5,#818cf8);">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <h4>Dynamic Pricing Engine</h4>
+        <p class="muted mt-2">Fares recalculate in real-time based on seat load factor, departure countdown, peak hour travel, and cabin class demand.</p>
+      </div>
+
+      <div class="feature-card-new glass reveal" style="transition-delay:0.1s;">
+        <div class="feature-icon-wrap" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8);">
+          <i class="fa-solid fa-couch"></i>
+        </div>
+        <h4>Interactive Seat Selection</h4>
+        <p class="muted mt-2">Pick window, aisle, or extra legroom seats in a realistic 3D cabin visualizer with live seat fee calculation.</p>
+      </div>
+
+      <div class="feature-card-new glass reveal" style="transition-delay:0.2s;">
+        <div class="feature-icon-wrap" style="background:linear-gradient(135deg,#10b981,#34d399);">
+          <i class="fa-solid fa-credit-card"></i>
+        </div>
+        <h4>Multi-Channel Payments</h4>
+        <p class="muted mt-2">Complete payment via UPI (PhonePe, GPay, Paytm), Cards, Net Banking (top 15+ banks), digital wallets, or pay at counter.</p>
+      </div>
+
+      <div class="feature-card-new glass reveal" style="transition-delay:0.3s;">
+        <div class="feature-icon-wrap" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">
+          <i class="fa-solid fa-file-pdf"></i>
+        </div>
+        <h4>Digital E-Ticket with QR</h4>
+        <p class="muted mt-2">Generate official A4 airline tickets with scannable QR verification, complete passenger seating details, and fare breakdown.</p>
+      </div>
+
+      <div class="feature-card-new glass reveal" style="transition-delay:0.4s;">
+        <div class="feature-icon-wrap" style="background:linear-gradient(135deg,#ec4899,#f43f5e);">
+          <i class="fa-solid fa-tags"></i>
+        </div>
+        <h4>Promotional Deals Engine</h4>
+        <p class="muted mt-2">Server-validated family discounts, student deals, weekend specials, and promo codes applied directly to your booking.</p>
+      </div>
+
+      <div class="feature-card-new glass reveal" style="transition-delay:0.5s;">
+        <div class="feature-icon-wrap" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">
+          <i class="fa-solid fa-headset"></i>
+        </div>
+        <h4>24/7 Simulator Support</h4>
+        <p class="muted mt-2">Comprehensive travel assistance, mock refund processing, and itinerary management right from your personal dashboard.</p>
+      </div>
+    </div>
+
+    <!-- Pre-Footer CTA -->
+    <div class="cta-section-new mt-5">
+      <div class="cta-bg-glow"></div>
+      <div class="cta-content text-center">
+        <div class="cta-plane-icon reveal"><i class="fa-solid fa-plane-tail"></i></div>
+        <h2 class="reveal mb-3">Ready to experience the future of flight booking?</h2>
+        <p class="reveal muted mb-4" style="font-size:1.1rem;">Search real-time simulated routes, grab exclusive deals, and download your e-ticket instantly.</p>
+        <div class="reveal flex justify-center gap-3 flex-wrap">
+          <a href="/" class="btn btn-primary btn-large">Start Flight Search <i class="fa-solid fa-arrow-right ms-2"></i></a>
+          <a href="/deals/" class="btn btn-outline btn-large">View Current Deals <i class="fa-solid fa-tag ms-2"></i></a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

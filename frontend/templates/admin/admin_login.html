@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal Login | FlyEase Security</title>
+  {% load static %}
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'admin.css' %}">
+
+  <style>
+    .admin-login-body {
+      background: radial-gradient(circle at center, #0B172E 0%, #030712 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .admin-login-card {
+      background: rgba(14, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--admin-border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 440px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(6, 182, 212, 0.2);
+      position: relative;
+      z-index: 10;
+    }
+    .admin-login-brand {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .admin-brand-icon {
+      font-size: 2.5rem;
+      color: var(--admin-cyan);
+      filter: drop-shadow(0 0 15px rgba(6, 182, 212, 0.7));
+      margin-bottom: 0.5rem;
+    }
+    .admin-login-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+    }
+    .admin-login-subtitle {
+      color: var(--admin-text-muted);
+      font-size: 0.88rem;
+      margin-top: 0.35rem;
+    }
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--admin-text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+    }
+    .password-input-wrapper {
+      position: relative;
+    }
+    .password-toggle-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: var(--admin-text-dim);
+      cursor: pointer;
+    }
+    .admin-login-btn {
+      width: 100%;
+      padding: 0.85rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      margin-top: 1rem;
+    }
+    .error-alert {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      color: var(--admin-rose);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body class="admin-login-body">
+  
+  <div class="radar-grid-bg"></div>
+  <div class="radar-sweep-beam"></div>
+
+  <div class="admin-login-card">
+    <div class="admin-login-brand">
+      <div class="admin-brand-icon"><i class="fa-solid fa-plane-shield"></i></div>
+      <h2 class="admin-login-title">FlyEase Portal</h2>
+      <p class="admin-login-subtitle">Secured Airline Operations & Revenue Center</p>
+    </div>
+
+    <div class="error-alert" id="login-error">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span id="error-msg">Invalid administrator credentials.</span>
+    </div>
+
+    <form id="admin-login-form">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="username"><i class="fa-solid fa-user-astronaut me-1"></i> Admin Email or Username</label>
+        <input type="text" id="username" class="admin-input" placeholder="admin@flyease.com or admin" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label for="password"><i class="fa-solid fa-lock-keyhole me-1"></i> Password</label>
+        <div class="password-input-wrapper">
+          <input type="password" id="password" class="admin-input" placeholder="••••••••" required>
+          <button type="button" class="password-toggle-btn" id="pw-toggle" title="Show/Hide Password">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-between align-center mb-3" style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;color:var(--admin-text-muted);">
+        <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+          <input type="checkbox" id="remember-session" checked> Remember session
+        </label>
+        <a href="/login/" style="color:var(--admin-cyan);text-decoration:none;">Normal User Login →</a>
+      </div>
+
+      <button type="submit" class="admin-btn admin-btn-primary admin-login-btn" id="submit-btn">
+        <i class="fa-solid fa-key"></i> Authenticate & Enter Portal
+      </button>
+    </form>
+  </div>
+
+  <script>
+    const pwInput = document.getElementById('password');
+    const pwToggle = document.getElementById('pw-toggle');
+    const form = document.getElementById('admin-login-form');
+    const errorBox = document.getElementById('login-error');
+    const errorMsg = document.getElementById('error-msg');
+    const submitBtn = document.getElementById('submit-btn');
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    pwToggle.addEventListener('click', () => {
+      const type = pwInput.type === 'password' ? 'text' : 'password';
+      pwInput.type = type;
+      pwToggle.innerHTML = type === 'password' ? '<i class="fa-solid fa-eye"></i>' : '<i class="fa-solid fa-eye-slash"></i>';
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying Credentials...';
+
+      const csrfToken = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+      try {
+        const res = await fetch('/admin-portal/login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({
+            username: document.getElementById('username').value.trim(),
+            password: pwInput.value
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          window.location.href = data.redirect;
+        } else {
+          errorMsg.textContent = data.error || 'Invalid administrator credentials.';
+          errorBox.style.display = 'flex';
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fa-solid fa-key"></i> Authenticate & Enter Portal';
+        }
+      } catch (err) {
+        errorMsg.textContent = 'Server connection error. Please try again.';
+        errorBox.style.display = 'flex';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-key"></i> Authenticate & Enter Portal';
+      }
+    });
+  </script>
+</body>
+</html>

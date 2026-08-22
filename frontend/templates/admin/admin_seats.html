@@ -1,0 +1,219 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Seat Inventory Management | FlyEase Admin{% endblock %}
+{% block page_title %}Aircraft Cabin Seat Map & Inventory Control{% endblock %}
+
+{% block content %}
+<div class="admin-glass-card mb-4">
+  <div class="admin-glass-card-header">
+    <h3 class="admin-card-title"><i class="fa-solid fa-plane" style="color:var(--admin-cyan);"></i> Select Flight Cabin</h3>
+    <select class="admin-select" id="seat-flight-select" style="max-width:350px;" onchange="loadFlightSeatMap()">
+      <option value="">Loading flights...</option>
+    </select>
+  </div>
+
+  <!-- Cabin Status Counter Legend -->
+  <div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;background:rgba(8,14,26,0.6);padding:1rem 1.5rem;border-radius:12px;border:1px solid var(--admin-border);">
+    <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+      <div class="admin-seat-box seat-available" style="width:24px;height:24px;font-size:0.65rem;"></div>
+      <span>Available (<strong id="cnt-avail" style="color:var(--admin-emerald);">0</strong>)</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+      <div class="admin-seat-box seat-occupied" style="width:24px;height:24px;font-size:0.65rem;"></div>
+      <span>Occupied (<strong id="cnt-occ" style="color:var(--admin-rose);">0</strong>)</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+      <div class="admin-seat-box seat-blocked" style="width:24px;height:24px;font-size:0.65rem;"></div>
+      <span>Blocked / Reserved (<strong id="cnt-block" style="color:var(--admin-amber);">0</strong>)</span>
+    </div>
+    <span style="margin-left:auto;font-size:0.8rem;color:var(--admin-text-muted);">
+      <i class="fa-solid fa-hand-pointer text-primary me-1"></i> <strong>Click any seat</strong> to cycle status (Available ➔ Occupied ➔ Blocked).
+    </span>
+  </div>
+</div>
+
+<!-- Interactive Aircraft Cabin Layout Grid -->
+<div class="admin-glass-card">
+  <div class="admin-glass-card-header">
+    <h3 class="admin-card-title"><i class="fa-solid fa-couch" style="color:var(--admin-purple);"></i> Cabin Seat Layout</h3>
+    <span class="admin-badge-pill" id="seat-aircraft-model">Airbus A320neo</span>
+  </div>
+
+  <div class="seat-map-grid" id="cabin-layout-grid">
+    <div style="text-align:center;padding:3rem;color:var(--admin-text-muted);">Select a flight above to load the interactive cabin seat layout.</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let currentSeatFlightId = null;
+
+  async function populateSeatFlightsDropdown() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const preselectedFlightId = urlParams.get('flight_id');
+
+    try {
+      const res = await fetch('/admin-portal/api/flights/?page_size=100');
+      const d = await res.json();
+      const sel = document.getElementById('seat-flight-select');
+      sel.innerHTML = d.flights.map(f => `<option value="${f.id}" ${preselectedFlightId == f.id ? 'selected' : ''}>[${f.flight_number}] ${f.origin_code} → ${f.destination_code} (${f.departure_time})</option>`).join('');
+      
+      if (d.flights.length > 0) {
+        if (!preselectedFlightId) sel.value = d.flights[0].id;
+        loadFlightSeatMap();
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  async function loadFlightSeatMap() {
+    const flightId = document.getElementById('seat-flight-select').value;
+    if (!flightId) return;
+    currentSeatFlightId = flightId;
+
+    try {
+      const res = await fetch(`/admin-portal/api/flight/${flightId}/seats/`);
+      const d = await res.json();
+
+      document.getElementById('seat-aircraft-model').textContent = d.aircraft;
+      updateSeatCounters(d.stats);
+
+      // Separate seats into First, Business, and Economy classes
+      const firstClassSeats = d.seats.filter(s => s.seat_class === 'FIRST');
+      const bizClassSeats = d.seats.filter(s => s.seat_class === 'BUSINESS');
+      const ecoClassSeats = d.seats.filter(s => s.seat_class === 'ECONOMY' || s.seat_class === 'PREMIUM_ECONOMY');
+
+      const grid = document.getElementById('cabin-layout-grid');
+      grid.innerHTML = `
+        <div style="text-align:center;padding-bottom:1rem;color:var(--admin-cyan);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;font-size:0.8rem;">
+          <i class="fa-solid fa-plane-up"></i> COCKPIT / FRONT
+        </div>
+      `;
+
+      if (firstClassSeats.length > 0) {
+        grid.appendChild(createCabinSectionHeader('👑 First Class Suites', 'rgba(245, 158, 11, 0.2)', '#F59E0B'));
+        renderSeatSection(grid, firstClassSeats, 2);
+      }
+
+      if (bizClassSeats.length > 0) {
+        grid.appendChild(createCabinSectionHeader('💼 Business Class Cabin', 'rgba(99, 102, 241, 0.2)', '#818CF8'));
+        renderSeatSection(grid, bizClassSeats, 2);
+      }
+
+      if (ecoClassSeats.length > 0) {
+        grid.appendChild(createCabinSectionHeader('💺 Economy Class Cabin', 'rgba(6, 182, 212, 0.15)', '#06B6D4'));
+        renderSeatSection(grid, ecoClassSeats, 3);
+      }
+
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  function createCabinSectionHeader(title, bg, col) {
+    const div = document.createElement('div');
+    div.style.cssText = `background:${bg};border:1px solid ${col};color:${col};padding:0.35rem 0.75rem;border-radius:8px;font-size:0.75rem;font-weight:700;text-align:center;margin:0.75rem 0 0.5rem 0;letter-spacing:0.05em;text-transform:uppercase;`;
+    div.textContent = title;
+    return div;
+  }
+
+  function renderSeatSection(container, seatsList, halfAisleCount) {
+    const rows = {};
+    seatsList.forEach(s => {
+      // Extract numeric or alphabetic row identifier
+      const rowId = s.seat_number.replace(/[A-Z]+$/g, '') || s.seat_number.charAt(0);
+      if (!rows[rowId]) rows[rowId] = [];
+      rows[rowId].push(s);
+    });
+
+    Object.keys(rows).forEach(rId => {
+      const rowSeats = rows[rId];
+      const leftSide = rowSeats.slice(0, halfAisleCount);
+      const rightSide = rowSeats.slice(halfAisleCount);
+
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'seat-row';
+      
+      let rowHtml = `<span style="font-size:0.72rem;color:var(--admin-text-dim);width:26px;text-align:center;">${rId}</span>`;
+
+      leftSide.forEach(s => {
+        rowHtml += renderSeatBox(s);
+      });
+
+      rowHtml += `<div class="seat-aisle-gap"></div>`;
+
+      rightSide.forEach(s => {
+        rowHtml += renderSeatBox(s);
+      });
+
+      rowDiv.innerHTML = rowHtml;
+      container.appendChild(rowDiv);
+    });
+  }
+
+  function renderSeatBox(s) {
+    const cls = s.status === 'AVAILABLE' ? 'seat-available' : (s.status === 'BLOCKED' ? 'seat-blocked' : 'seat-occupied');
+    return `
+      <div id="seat-box-${s.id}" class="admin-seat-box ${cls}" title="Seat ${s.seat_number} (${s.seat_class}) - Click to toggle status" onclick="cycleSeatStatus(${s.id}, '${s.seat_number}')">
+        <span>${s.seat_number}</span>
+      </div>
+    `;
+  }
+
+  async function cycleSeatStatus(seatId, seatNumber) {
+    const el = document.getElementById(`seat-box-${seatId}`);
+    if (!el) return;
+
+    // Fast optimistic UI cycle: AVAILABLE -> OCCUPIED -> BLOCKED -> AVAILABLE
+    let currentClass = 'seat-available';
+    let nextStatus = 'OCCUPIED';
+    let nextClass = 'seat-occupied';
+
+    if (el.classList.contains('seat-available')) {
+      nextStatus = 'OCCUPIED';
+      nextClass = 'seat-occupied';
+      el.className = 'admin-seat-box seat-occupied';
+    } else if (el.classList.contains('seat-occupied')) {
+      nextStatus = 'BLOCKED';
+      nextClass = 'seat-blocked';
+      el.className = 'admin-seat-box seat-blocked';
+    } else {
+      nextStatus = 'AVAILABLE';
+      nextClass = 'seat-available';
+      el.className = 'admin-seat-box seat-available';
+    }
+
+    try {
+      const res = await fetch('/admin-portal/api/seat/toggle/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seat_id: seatId, status: nextStatus })
+      });
+      const d = await res.json();
+      if (d.success) {
+        AdminApp.showToast(`Seat ${seatNumber} is now ${d.new_status}`);
+        updateSeatCounters(d.stats);
+      } else {
+        AdminApp.showToast(d.error, 'error');
+        loadFlightSeatMap();
+      }
+    } catch(e) {
+      console.error(e);
+      loadFlightSeatMap();
+    }
+  }
+
+  function updateSeatCounters(stats) {
+    if (!stats) return;
+    document.getElementById('cnt-avail').textContent = stats.AVAILABLE || 0;
+    document.getElementById('cnt-occ').textContent = stats.OCCUPIED || 0;
+    document.getElementById('cnt-block').textContent = stats.BLOCKED || 0;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    populateSeatFlightsDropdown();
+  });
+</script>
+{% endblock %}

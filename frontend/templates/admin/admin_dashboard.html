@@ -1,0 +1,311 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Dashboard Overview | FlyEase Admin{% endblock %}
+{% block page_title %}Real-Time Revenue & Operations Overview{% endblock %}
+
+{% block content %}
+<!-- Animated KPI Counter Cards -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-icon-box" style="color:var(--admin-cyan);"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+    <div class="kpi-label">Total Revenue</div>
+    <div class="kpi-value" id="kpi-total-revenue">₹0</div>
+    <div class="kpi-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> <span>Live aggregated</span></div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon-box" style="color:var(--admin-emerald);"><i class="fa-solid fa-calendar-day"></i></div>
+    <div class="kpi-label">Today's Revenue</div>
+    <div class="kpi-value" id="kpi-today-revenue">₹0</div>
+    <div class="kpi-trend trend-up"><i class="fa-solid fa-bolt"></i> <span>24h dynamic earnings</span></div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon-box" style="color:var(--admin-blue);"><i class="fa-solid fa-ticket"></i></div>
+    <div class="kpi-label">Total Bookings</div>
+    <div class="kpi-value" id="kpi-total-bookings">0</div>
+    <div class="kpi-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> <span>Real database count</span></div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon-box" style="color:var(--admin-amber);"><i class="fa-solid fa-plane-up"></i></div>
+    <div class="kpi-label">Active Flights</div>
+    <div class="kpi-value" id="kpi-active-flights">0</div>
+    <div class="kpi-trend trend-up"><i class="fa-solid fa-tower-broadcast"></i> <span>Scheduled & In-Flight</span></div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon-box" style="color:var(--admin-purple);"><i class="fa-solid fa-couch"></i></div>
+    <div class="kpi-label">Available Seats</div>
+    <div class="kpi-value" id="kpi-avail-seats">0</div>
+    <div class="kpi-trend" style="color:var(--admin-cyan);"><i class="fa-solid fa-percent"></i> <span id="kpi-occ-rate">0% occupancy</span></div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon-box" style="color:var(--admin-rose);"><i class="fa-solid fa-circle-xmark"></i></div>
+    <div class="kpi-label">Cancellations</div>
+    <div class="kpi-value" id="kpi-cancelled-bookings">0</div>
+    <div class="kpi-trend trend-down"><i class="fa-solid fa-shield-halved"></i> <span>Refund tracking</span></div>
+  </div>
+</div>
+
+<!-- Main Analytics & Charts Section -->
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+  
+  <!-- Revenue & Growth Trends -->
+  <div class="admin-glass-card">
+    <div class="admin-glass-card-header">
+      <h3 class="admin-card-title"><i class="fa-solid fa-chart-area" style="color:var(--admin-cyan);"></i> Revenue & Booking Growth</h3>
+      <div class="toolbar-filters">
+        <select class="admin-select" id="chart-timeframe" style="width:130px;" onchange="loadAnalyticsCharts()">
+          <option value="7D">Last 7 Days</option>
+          <option value="30D" selected>Last 30 Days</option>
+          <option value="3M">Last 3 Months</option>
+          <option value="1Y">Last 1 Year</option>
+        </select>
+      </div>
+    </div>
+    <div style="height:320px;position:relative;">
+      <canvas id="revenueGrowthChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Cabin Class Distribution -->
+  <div class="admin-glass-card">
+    <div class="admin-glass-card-header">
+      <h3 class="admin-card-title"><i class="fa-solid fa-pie-chart" style="color:var(--admin-purple);"></i> Revenue by Cabin</h3>
+    </div>
+    <div style="height:320px;display:flex;align-items:center;justify-content:center;position:relative;">
+      <canvas id="cabinClassChart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<!-- Route & Heatmap Section -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+  
+  <!-- Top Revenue Routes -->
+  <div class="admin-glass-card">
+    <div class="admin-glass-card-header">
+      <h3 class="admin-card-title"><i class="fa-solid fa-route" style="color:var(--admin-emerald);"></i> Top Performing Routes</h3>
+    </div>
+    <div style="height:260px;position:relative;">
+      <canvas id="topRoutesChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Real-Time Demand Heatmap -->
+  <div class="admin-glass-card">
+    <div class="admin-glass-card-header">
+      <h3 class="admin-card-title"><i class="fa-solid fa-fire text-warning"></i> Route Demand Heatmap</h3>
+      <span class="admin-badge-pill">Live Algorithm</span>
+    </div>
+    <div id="demand-heatmap-list" style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div style="color:var(--admin-text-muted);text-align:center;padding:2rem;">Loading dynamic demand matrix...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Quick Flight Shortcuts & System Alerts -->
+<div class="admin-glass-card">
+  <div class="admin-glass-card-header">
+    <h3 class="admin-card-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--admin-amber);"></i> Critical Operations Alerts</h3>
+    <a href="/admin-portal/alerts/" class="admin-btn admin-btn-outline" style="padding:0.4rem 0.8rem;font-size:0.8rem;">View All Alerts</a>
+  </div>
+  <div id="quick-alerts-feed" style="display:flex;flex-direction:column;gap:0.75rem;">
+    <!-- Filled dynamically -->
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let revChart = null;
+  let cabinChart = null;
+  let routeChart = null;
+
+  async function loadKPIs() {
+    try {
+      const res = await fetch('/admin-portal/api/kpis/');
+      const data = await res.json();
+      
+      animateValue('kpi-total-revenue', 0, data.total_revenue, 1200, true);
+      animateValue('kpi-today-revenue', 0, data.today_revenue, 1000, true);
+      animateValue('kpi-total-bookings', 0, data.total_bookings, 800, false);
+      animateValue('kpi-active-flights', 0, data.active_flights, 800, false);
+      animateValue('kpi-avail-seats', 0, data.available_seats, 1000, false);
+      animateValue('kpi-cancelled-bookings', 0, data.cancelled_bookings, 600, false);
+      
+      document.getElementById('kpi-occ-rate').textContent = `${data.occupancy_rate}% occupancy`;
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  function animateValue(id, start, end, duration, isCurrency) {
+    const obj = document.getElementById(id);
+    if (!obj) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const currentVal = Math.floor(progress * (end - start) + start);
+      obj.innerHTML = isCurrency ? ('₹' + currentVal.toLocaleString('en-IN')) : currentVal.toLocaleString('en-IN');
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }
+
+  async function loadAnalyticsCharts() {
+    const tf = document.getElementById('chart-timeframe').value;
+    try {
+      const res = await fetch(`/admin-portal/api/analytics/?timeframe=${tf}`);
+      const d = await res.json();
+
+      // 1. Revenue Chart
+      const ctxRev = document.getElementById('revenueGrowthChart').getContext('2d');
+      if (revChart) revChart.destroy();
+      revChart = new Chart(ctxRev, {
+        type: 'line',
+        data: {
+          labels: d.revenue_chart.labels,
+          datasets: [
+            {
+              label: 'Revenue (₹)',
+              data: d.revenue_chart.revenue,
+              borderColor: '#06B6D4',
+              backgroundColor: 'rgba(6, 182, 212, 0.12)',
+              fill: true,
+              tension: 0.4,
+              borderWidth: 2,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Bookings',
+              data: d.revenue_chart.bookings,
+              borderColor: '#6366F1',
+              backgroundColor: 'transparent',
+              borderDash: [5, 5],
+              borderWidth: 2,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8' } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', callback: v => '₹' + v.toLocaleString() } },
+            y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#6366F1' } }
+          },
+          plugins: { legend: { labels: { color: '#fff' } } }
+        }
+      });
+
+      // 2. Cabin Class Pie Chart
+      const ctxCabin = document.getElementById('cabinClassChart').getContext('2d');
+      if (cabinChart) cabinChart.destroy();
+      cabinChart = new Chart(ctxCabin, {
+        type: 'doughnut',
+        data: {
+          labels: d.cabin_chart.labels,
+          datasets: [{
+            data: d.cabin_chart.data,
+            backgroundColor: ['#06B6D4', '#3B82F6', '#8B5CF6', '#F59E0B'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { color: '#94A3B8' } } }
+        }
+      });
+
+      // 3. Top Routes Chart
+      const ctxRoute = document.getElementById('topRoutesChart').getContext('2d');
+      if (routeChart) routeChart.destroy();
+      routeChart = new Chart(ctxRoute, {
+        type: 'bar',
+        data: {
+          labels: d.route_chart.labels,
+          datasets: [{
+            label: 'Route Revenue (₹)',
+            data: d.route_chart.data,
+            backgroundColor: 'rgba(16, 185, 129, 0.65)',
+            borderColor: '#10B981',
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8' } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', callback: v => '₹' + v.toLocaleString() } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      // 4. Demand Heatmap
+      const heatEl = document.getElementById('demand-heatmap-list');
+      if (d.demand_heatmap && d.demand_heatmap.length > 0) {
+        heatEl.innerHTML = d.demand_heatmap.map(h => `
+          <div class="pricing-factor-row">
+            <span style="font-weight:600;color:#fff;">${h.route}</span>
+            <div style="width:140px;">
+              <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:2px;">
+                <span style="color:var(--admin-text-muted);">Demand</span>
+                <span style="color:var(--admin-cyan);font-weight:700;">${h.demand_score}%</span>
+              </div>
+              <div class="factor-progress-bar">
+                <div class="factor-progress-fill" style="width:${Math.min(100, h.demand_score)}%;"></div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  async function loadQuickAlerts() {
+    try {
+      const res = await fetch('/admin-portal/api/alerts/');
+      const data = await res.json();
+      const feed = document.getElementById('quick-alerts-feed');
+      if (data.alerts && data.alerts.length > 0) {
+        feed.innerHTML = data.alerts.slice(0, 3).map(a => `
+          <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-left:4px solid ${a.level === 'CRITICAL' ? 'var(--admin-rose)' : 'var(--admin-amber)'};padding:0.75rem 1rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:0.9rem;">${a.title}</div>
+              <div style="color:var(--admin-text-muted);font-size:0.78rem;">${a.message}</div>
+            </div>
+            <span style="font-size:0.75rem;color:var(--admin-text-dim);">${a.created_at}</span>
+          </div>
+        `).join('');
+      } else {
+        feed.innerHTML = '<div style="color:var(--admin-text-muted);text-align:center;padding:1rem;">No unresolved operational alerts.</div>';
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadKPIs();
+    loadAnalyticsCharts();
+    loadQuickAlerts();
+  });
+</script>
+{% endblock %}

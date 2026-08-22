@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Terms of Service 📜 | FlyEase Booking Conditions{% endblock %}
+
+{% block content %}
+<section class="feature-page-container">
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-file-contract text-primary me-1"></i> User Agreement</span>
+      <h1 class="page-title mt-2">Terms of Service</h1>
+      <p class="page-subtitle muted max-w-750 mx-auto">
+        Please review our operational terms, ticket validity rules, and algorithmic dynamic pricing conditions.
+      </p>
+    </div>
+  </div>
+
+  <div class="container max-w-1280 mt-5 pb-5">
+    <div class="glass p-5 rounded-xl max-w-900 mx-auto">
+      <h4 class="text-primary mb-2">1. Booking Contract & PNR Confirmation</h4>
+      <p class="muted small mb-4">
+        A flight reservation is confirmed only upon successful generation of a 10-character PNR code and matching ticket sequence number. Confirmed bookings are legally binding within the simulation framework.
+      </p>
+
+      <h4 class="text-primary mb-2">2. Dynamic Pricing & Fare Validity</h4>
+      <p class="muted small mb-4">
+        Displayed fares are real-time and subject to dynamic change until the booking checkout is completed. Special promotional discounts (e.g. promo codes and deal coupons) are valid for specified quotas and departure windows.
+      </p>
+
+      <h4 class="text-primary mb-2">3. Airport Boarding & Security Protocols</h4>
+      <p class="muted small mb-4">
+        All passengers must present valid government photo identification matching the name on their issued E-Ticket PDF at airport security and departure boarding gates.
+      </p>
+
+      <h4 class="text-primary mb-2">4. Platform Modifications</h4>
+      <p class="muted small mb-0">
+        FlyEase reserves the right to update simulated schedules, aircraft configurations, and pricing parameters for operational optimization.
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

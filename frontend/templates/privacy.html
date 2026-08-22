@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy 🔒 | FlyEase Passenger Data Protection{% endblock %}
+
+{% block content %}
+<section class="feature-page-container">
+  <div class="page-hero-banner glass text-center">
+    <div class="max-w-1280">
+      <span class="section-pill mb-3"><i class="fa-solid fa-user-shield text-success me-1"></i> Data Protection</span>
+      <h1 class="page-title mt-2">FlyEase Privacy Policy</h1>
+      <p class="page-subtitle muted max-w-750 mx-auto">
+        We prioritize transparency and passenger data protection. Read how your booking details and simulator records are handled.
+      </p>
+    </div>
+  </div>
+
+  <div class="container max-w-1280 mt-5 pb-5">
+    <div class="glass p-5 rounded-xl max-w-900 mx-auto">
+      <h4 class="text-primary mb-2">1. Information We Collect</h4>
+      <p class="muted small mb-4">
+        We collect passenger full names, date of birth, contact phone numbers, email addresses, and passport/government ID numbers solely for the purpose of issuing verifiable E-Tickets and seat manifests.
+      </p>
+
+      <h4 class="text-primary mb-2">2. How Data is Processed & Secured</h4>
+      <p class="muted small mb-4">
+        All transmission between your browser and our Django backend is encrypted with 256-bit SSL/TLS protocols. Passwords and sensitive authentication tokens are hashed using industry-standard cryptographic algorithms.
+      </p>
+
+      <h4 class="text-primary mb-2">3. Simulator Scope & Payment Tokens</h4>
+      <p class="muted small mb-4">
+        FlyEase is an educational aviation dynamic pricing simulator. We never store real credit card numbers, CVVs, or bank account credentials. All transactions use randomized simulated token IDs.
+      </p>
+
+      <h4 class="text-primary mb-2">4. User Rights & Data Deletion</h4>
+      <p class="muted small mb-0">
+        You may request the deletion of your account and booking history at any time by contacting our privacy compliance officer at <b>privacy@flyease.aero</b>.
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}
