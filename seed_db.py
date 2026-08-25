@@ -4,7 +4,12 @@ import django
 
 # Setup Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flight_simulator.settings')
-django.setup()
+try:
+    from django.apps import apps
+    if not apps.ready:
+        django.setup()
+except Exception:
+    django.setup()
 
 from django.utils import timezone
 from django.db import transaction
@@ -25,7 +30,8 @@ from flights.flight_generator import AIRPORT_COORDS, create_dynamic_schedule_fli
 def seed():
     print("Clearing old data...")
     with connection.cursor() as cursor:
-        cursor.execute("PRAGMA foreign_keys = OFF;")
+        if connection.vendor == 'sqlite':
+            cursor.execute("PRAGMA foreign_keys = OFF;")
         cursor.execute("DELETE FROM flights_bookingpassenger;")
         cursor.execute("DELETE FROM flights_payment;")
         cursor.execute("DELETE FROM flights_adminalert;")
@@ -45,7 +51,8 @@ def seed():
         cursor.execute("DELETE FROM flights_airline;")
         cursor.execute("DELETE FROM flights_travelrequirement;")
         cursor.execute("DELETE FROM flights_servicehealthlog;")
-        cursor.execute("PRAGMA foreign_keys = ON;")
+        if connection.vendor == 'sqlite':
+            cursor.execute("PRAGMA foreign_keys = ON;")
 
     print("Ensuring Admin User...")
     admin_user, created = User.objects.get_or_create(username='admin', defaults={'email': 'admin@flyease.com', 'is_staff': True, 'is_superuser': True})

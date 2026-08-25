@@ -108,6 +108,11 @@ DATABASES = {
     }
 }
 
+# On Vercel / serverless runtime, /var/task is read-only.
+# SQLite requires write permissions, so we point it to /tmp/db.sqlite3
+if os.environ.get('VERCEL') and not os.environ.get('DATABASE_URL'):
+    DATABASES['default']['NAME'] = Path('/tmp/db.sqlite3')
+
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
     try:
