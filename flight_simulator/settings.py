@@ -28,6 +28,13 @@ DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.vercel.app',
+    'https://*.now.sh',
+    'http://127.0.0.1',
+    'http://localhost',
+]
+
 # API Keys and Environment Configuration
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '') or os.environ.get('GROQ_KEY', '')
 WEATHER_API_KEY = os.environ.get('WEATHER_API_KEY', '') or os.environ.get('OPENWEATHERMAP_API_KEY', '')
@@ -101,6 +108,14 @@ DATABASES = {
     }
 }
 
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    try:
+        import dj_database_url
+        DATABASES['default'] = dj_database_url.parse(database_url, conn_max_age=600)
+    except ImportError:
+        pass
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -137,10 +152,27 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
     BASE_DIR / "frontend/static",
 ]
+
+# Whitenoise static files compression & caching if available
+try:
+    import whitenoise  # noqa: F401
+    if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
+        MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+except ImportError:
+    pass
 
 # Public assets (landing page videos, etc.) — served at /video/ directly
 PUBLIC_DIR = BASE_DIR / 'frontend' / 'public'
